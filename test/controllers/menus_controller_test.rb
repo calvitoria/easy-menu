@@ -52,4 +52,32 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     json = JSON.parse(@response.body)
     assert_includes json["errors"], "Name can't be blank"
   end
+
+  test "GET /menus/:menu_id/menu_items returns menu items for the menu" do
+    menu = Menu.create!(name: "Specials")
+    item1 = menu.menu_items.create!(name: "Soup")
+    item2 = menu.menu_items.create!(name: "Salad")
+    other_menu = Menu.create!(name: "Other")
+    other_menu.menu_items.create!(name: "Burger")
+  
+    get "/menus/#{menu.id}/menu_items"
+    assert_response :success
+    json = JSON.parse(@response.body)
+    names = json.map { |item| item["name"] }
+    assert_includes names, "Soup"
+    assert_includes names, "Salad"
+    assert_not_includes names, "Burger"
+  end
+
+  test "DELETE /menus/:id destroys a menu and its items" do
+    menu = Menu.create!(name: "To Be Deleted")
+    menu.menu_items.create!(name: "Item 1")
+    menu.menu_items.create!(name: "Item 2")
+  
+    delete "/menus/#{menu.id}"
+  
+    assert_response :no_content
+    assert_not Menu.exists?(menu.id)
+    assert_equal 0, MenuItem.where(menu_id: menu.id).count
+  end
 end

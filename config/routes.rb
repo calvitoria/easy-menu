@@ -14,4 +14,6 @@ Rails.application.routes.draw do
   resources :menus do
     resources :menu_items
   end
+
+  resources :menu_items
 end
