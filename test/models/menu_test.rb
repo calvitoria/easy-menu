@@ -18,7 +18,18 @@ class MenuTest < ActiveSupport::TestCase
   end
 
   test "menu has many menu_items" do
-    menu = Menu.new(name: "Lunch")
-    assert_respond_to menu, :menu_items, "Menu should respond to menu_items"
+    menu = Menu.create!(name: "Lunch")
+    item1 = menu.menu_items.create!(name: "Burger")
+    item2 = menu.menu_items.create!(name: "Fries")
+    assert_equal 2, menu.menu_items.count
+    assert_includes menu.menu_items, item1
+    assert_includes menu.menu_items, item2
+  end
+
+  test "destroying menu destroys its menu_items" do
+    menu = Menu.create!(name: "Snacks")
+    menu_item = menu.menu_items.create!(name: "Chips")
+    menu.destroy
+    assert_nil MenuItem.find_by(id: menu_item.id), "MenuItem should be destroyed when menu is destroyed"
   end
 end
