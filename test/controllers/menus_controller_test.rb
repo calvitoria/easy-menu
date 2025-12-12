@@ -1,13 +1,17 @@
 require "test_helper"
 
 class MenusControllerTest < ActionDispatch::IntegrationTest
-  test "GET /menus returns menus with items" do
-    Menu.destroy_all
+  include FactoryBot::Syntax::Methods
+
+  setup do
     MenuItem.destroy_all
+    Menu.destroy_all
+  end
   
-    menu = Menu.create!(name: "Breakfast")
-    menu.menu_items.create!(name: "Coffee", price: 4.0)
-    menu.menu_items.create!(name: "Waffles", price: 10.5)
+  test "GET /menus returns menus with items" do
+    menu = create(:menu, name: "Breakfast")
+    create(:menu_item, menu: menu, name: "Coffee", price: 4.0)
+    create(:menu_item, menu: menu, name: "Waffles", price: 10.5)
   
     get "/menus"
     assert_response :success
@@ -36,7 +40,7 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "PUT /menus/:id updates a menu" do
-    menu = Menu.create!(name: "Original")
+    menu = create(:menu, name: "Original")
 
     put "/menus/#{menu.id}", params: { menu: { name: "Updated" } }, as: :json
     assert_response :success
@@ -45,7 +49,7 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "PUT /menus/:id validates name" do
-    menu = Menu.create!(name: "Original")
+    menu = create(:menu, name: "Original")
 
     put "/menus/#{menu.id}", params: { menu: { name: "" } }, as: :json
     assert_response :unprocessable_entity
@@ -54,11 +58,11 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "GET /menus/:menu_id/menu_items returns menu items for the menu" do
-    menu = Menu.create!(name: "Specials")
-    item1 = menu.menu_items.create!(name: "Soup")
-    item2 = menu.menu_items.create!(name: "Salad")
-    other_menu = Menu.create!(name: "Other")
-    other_menu.menu_items.create!(name: "Burger")
+    menu = create(:menu, name: "Specials")
+    create(:menu_item, menu: menu, name: "Soup")
+    create(:menu_item, menu: menu, name: "Salad")
+    other_menu = create(:menu, name: "Other")
+    create(:menu_item, menu: other_menu, name: "Burger")
   
     get "/menus/#{menu.id}/menu_items"
     assert_response :success
@@ -70,14 +74,33 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "DELETE /menus/:id destroys a menu and its items" do
-    menu = Menu.create!(name: "To Be Deleted")
-    menu.menu_items.create!(name: "Item 1")
-    menu.menu_items.create!(name: "Item 2")
+    menu = create(:menu, name: "To Be Deleted")
+    create(:menu_item, menu: menu, name: "Item 1")
+    create(:menu_item, menu: menu, name: "Item 2")
   
     delete "/menus/#{menu.id}"
   
     assert_response :no_content
     assert_not Menu.exists?(menu.id)
     assert_equal 0, MenuItem.where(menu_id: menu.id).count
+  end
+
+  test "GET /menus/:id returns a single menu with items" do
+    menu = create(:menu, name: "Lunch")
+    create(:menu_item, menu: menu, name: "Sandwich", price: 8.0)
+    create(:menu_item, menu: menu, name: "Salad", price: 7.5)
+
+    get "/menus/#{menu.id}"
+    assert_response :success
+
+    json = JSON.parse(@response.body)
+    assert_equal "Lunch", json["name"]
+    assert_equal 2, json["menu_items"].length
+    assert_equal menu.id, json["id"]
+  end
+
+  test "GET /menus/:id returns 404 for non-existent menu" do
+    get "/menus/99999"
+    assert_response :not_found
   end
 end
