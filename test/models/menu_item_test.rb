@@ -25,7 +25,7 @@ class MenuItemTest < ActiveSupport::TestCase
     menu_item = menu.menu_items.create!(name: "Cake")
     assert_equal BigDecimal("0.0"), menu_item.price, "MenuItem should have default price of 0.0"
   end
-  
+
   test "cannot create menu_item without menu" do
     menu_item = MenuItem.new(name: "Orphan Item")
     assert_not menu_item.save, "MenuItem should not be saved without a menu"

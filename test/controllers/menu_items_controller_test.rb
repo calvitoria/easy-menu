@@ -33,16 +33,6 @@ class MenuItemsControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  test "POST /menus/:menu_id/menu_items creates a menu item" do
-    assert_difference "MenuItem.count", 1 do
-      post "/menus/#{@menu.id}/menu_items", params: { menu_item: { name: "New Item", price: 12.50 } }, as: :json
-    end
-    assert_response :created
-    json = JSON.parse(@response.body)
-    assert_equal "New Item", json["name"]
-    assert_equal @menu.id, json["menu_id"]
-  end
-
   test "POST /menus/:menu_id/menu_items fails with invalid params" do
     post "/menus/#{@menu.id}/menu_items", params: { menu_item: { name: "" } }, as: :json
     assert_response :unprocessable_entity

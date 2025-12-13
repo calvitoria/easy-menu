@@ -13,11 +13,24 @@ post {
 body:json {
   {
     "menu": {
-      "name": "My Menu"
+      "name": "Dinner"
     }
   }
 }
 
-vars:pre-request {
-  host: http://localhost:3000
+tests {
+  test("Status code is 201", function() {
+    expect(res.status).to.equal(201);
+  });
+  test("Menu name matches request payload", function() {
+    const requestName = req.body.json.menu.name;
+    expect(res.body.name).to.equal(requestName);
+  });
+}
+
+script:post-response {
+  if (res.status === 201 && res.body && res.body.id) {
+    bruno.setEnvironmentVariable('menu_id', res.body.id);
+    console.log('Created Menu ID:', res.body.id);
+  }
 }

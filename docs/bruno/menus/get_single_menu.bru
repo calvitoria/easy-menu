@@ -9,3 +9,12 @@ get {
   body: none
   auth: none
 }
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+  test("Menu has id", function() {
+    expect(res.body).to.have.property("id");
+  });
+}

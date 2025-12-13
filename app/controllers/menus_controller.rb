@@ -1,5 +1,5 @@
 class MenusController < ApplicationController
-  before_action :set_menu, only: [:show, :update, :destroy]
+  before_action :set_menu, only: [ :show, :update, :destroy ]
 
   def index
     @menus = Menu.includes(:menu_items).all

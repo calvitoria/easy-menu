@@ -5,12 +5,16 @@ meta {
 }
 
 get {
-  url: http://localhost:3000/menus/2/menu_items
+  url: http://localhost:3000/menus/4/menu_items
   body: none
   auth: none
 }
 
-vars:pre-request {
-  host: http://localhost:3000
-  menu_id: 
+tests {
+  test("Status code is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+  test("Response is an array", function() {
+    expect(Array.isArray(res.body)).to.be.true;
+  });
 }

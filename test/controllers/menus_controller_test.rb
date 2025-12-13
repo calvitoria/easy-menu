@@ -7,21 +7,21 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     MenuItem.destroy_all
     Menu.destroy_all
   end
-  
+
   test "GET /menus returns menus with items" do
     menu = create(:menu, name: "Breakfast")
     create(:menu_item, menu: menu, name: "Coffee", price: 4.0)
     create(:menu_item, menu: menu, name: "Waffles", price: 10.5)
-  
+
     get "/menus"
     assert_response :success
-  
+
     json = JSON.parse(@response.body)
     assert_equal 1, json.length
     assert_equal "Breakfast", json.first["name"]
     assert_equal 2, json.first["menu_items"].length
   end
-  
+
   test "POST /menus creates a menu" do
     post "/menus", params: { menu: { name: "Dinner" } }, as: :json
     assert_response :created
@@ -63,7 +63,7 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     create(:menu_item, menu: menu, name: "Salad")
     other_menu = create(:menu, name: "Other")
     create(:menu_item, menu: other_menu, name: "Burger")
-  
+
     get "/menus/#{menu.id}/menu_items"
     assert_response :success
     json = JSON.parse(@response.body)
@@ -77,9 +77,9 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     menu = create(:menu, name: "To Be Deleted")
     create(:menu_item, menu: menu, name: "Item 1")
     create(:menu_item, menu: menu, name: "Item 2")
-  
+
     delete "/menus/#{menu.id}"
-  
+
     assert_response :no_content
     assert_not Menu.exists?(menu.id)
     assert_equal 0, MenuItem.where(menu_id: menu.id).count

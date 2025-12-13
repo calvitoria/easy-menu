@@ -9,3 +9,9 @@ delete {
   body: none
   auth: none
 }
+
+tests {
+  test("Status code is 204", function() {
+    expect(res.status).to.equal(204);
+  });
+}
