@@ -8,6 +8,11 @@ class ApplicationController < ActionController::Base
   rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
   rescue_from ActionController::ParameterMissing, with: :parameter_missing
 
+
+  def route_not_found
+    render json: { error: "Route not found" }, status: :not_found
+  end
+
   private
 
   def record_not_found

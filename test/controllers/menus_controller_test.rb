@@ -9,7 +9,7 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "GET /menus returns menus with items" do
-    menu = create(:menu, name: "Breakfast")
+    menu = create(:menu, name: "Breakfast", description: "Morning meals", active: true, categories: [ "Breakfast" ])
     create(:menu_item, menu: menu, name: "Coffee", price: 4.0)
     create(:menu_item, menu: menu, name: "Waffles", price: 10.5)
 
@@ -19,15 +19,21 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     json = JSON.parse(@response.body)
     assert_equal 1, json.length
     assert_equal "Breakfast", json.first["name"]
+    assert_equal "Morning meals", json.first["description"]
+    assert_equal true, json.first["active"]
+    assert_equal [ "Breakfast" ], json.first["categories"]
     assert_equal 2, json.first["menu_items"].length
   end
 
   test "POST /menus creates a menu" do
-    post "/menus", params: { menu: { name: "Dinner" } }, as: :json
+    post "/menus", params: { menu: { name: "Dinner", description: "Evening meals", active: true, categories: [ "Dinner" ] } }, as: :json
     assert_response :created
 
     json = JSON.parse(@response.body)
     assert_equal "Dinner", json["name"]
+    assert_equal "Evening meals", json["description"]
+    assert_equal true, json["active"]
+    assert_equal [ "Dinner" ], json["categories"]
     assert Menu.exists?(json["id"])
   end
 
@@ -40,12 +46,16 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "PUT /menus/:id updates a menu" do
-    menu = create(:menu, name: "Original")
+    menu = create(:menu, name: "Original", description: "Original description", active: false, categories: [ "Lunch" ])
 
-    put "/menus/#{menu.id}", params: { menu: { name: "Updated" } }, as: :json
+    put "/menus/#{menu.id}", params: { menu: { name: "Updated", description: "Updated description", active: true, categories: [ "Dinner" ] } }, as: :json
     assert_response :success
 
-    assert_equal "Updated", menu.reload.name
+    menu.reload
+    assert_equal "Updated", menu.name
+    assert_equal "Updated description", menu.description
+    assert_equal true, menu.active
+    assert_equal [ "Dinner" ], menu.categories
   end
 
   test "PUT /menus/:id validates name" do
@@ -86,7 +96,7 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "GET /menus/:id returns a single menu with items" do
-    menu = create(:menu, name: "Lunch")
+    menu = create(:menu, name: "Lunch", description: "Midday meals", active: true, categories: [ "Lunch" ])
     create(:menu_item, menu: menu, name: "Sandwich", price: 8.0)
     create(:menu_item, menu: menu, name: "Salad", price: 7.5)
 
@@ -95,6 +105,9 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
 
     json = JSON.parse(@response.body)
     assert_equal "Lunch", json["name"]
+    assert_equal "Midday meals", json["description"]
+    assert_equal true, json["active"]
+    assert_equal [ "Lunch" ], json["categories"]
     assert_equal 2, json["menu_items"].length
     assert_equal menu.id, json["id"]
   end
