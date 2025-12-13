@@ -54,6 +54,24 @@ class MenuItemsControllerTest < ActionDispatch::IntegrationTest
     assert_equal true, json["spicy"]
   end
 
+  test "POST /menus/:menu_id/menu_items fails when categories is not an array" do
+    assert_no_difference("MenuItem.count") do
+      post "/menus/#{@menu.id}/menu_items",
+           params: {
+             menu_item: {
+               name: "Invalid Categories Item",
+               price: 10.0,
+               categories: "Appetizer"
+             }
+           },
+           as: :json
+    end
+
+    assert_response :unprocessable_entity
+    json = JSON.parse(@response.body)
+    assert_includes json["errors"], "categories must be an array of strings"
+  end
+
   test "POST /menus/:menu_id/menu_items fails with invalid params" do
     post "/menus/#{@menu.id}/menu_items", params: { menu_item: { name: "" } }, as: :json
     assert_response :unprocessable_entity
@@ -79,6 +97,20 @@ class MenuItemsControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     json = JSON.parse(@response.body)
     assert_includes json["errors"], "Name can't be blank"
+  end
+
+  test "PUT /menu_items/:id fails when categories is not an array" do
+    put "/menu_items/#{@menu_item.id}",
+        params: {
+          menu_item: {
+            categories: "Main Course"
+          }
+        },
+        as: :json
+
+    assert_response :unprocessable_entity
+    json = JSON.parse(@response.body)
+    assert_includes json["errors"], "categories must be an array of strings"
   end
 
   test "DELETE /menu_items/:id destroys a menu item" do

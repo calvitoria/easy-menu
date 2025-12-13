@@ -32,4 +32,25 @@ class MenuTest < ActiveSupport::TestCase
     menu.destroy
     assert_nil MenuItem.find_by(id: menu_item.id), "MenuItem should be destroyed when menu is destroyed"
   end
+
+  test "cannot create menu without a name" do
+    menu = Menu.new
+    assert_not menu.save, "Menu should not be saved without a name"
+    assert_includes menu.errors[:name], "can't be blank"
+  end
+
+  test "categories can be set and retrieved as array" do
+    menu = Menu.create!(name: "Specials", categories: [ "vegan", "gluten-free" ])
+    assert_equal [ "vegan", "gluten-free" ], menu.categories
+  end
+
+  test "categories defaults to empty array" do
+    menu = Menu.create!(name: "Sides")
+    assert_equal [], menu.categories
+  end
+
+  test "menu responds to categories as array" do
+    menu = Menu.create!(name: "Appetizers", categories: [ "spicy" ])
+    assert_kind_of Array, menu.categories
+  end
 end

@@ -37,4 +37,35 @@ class MenuItemTest < ActiveSupport::TestCase
     menu_item = menu.menu_items.create!(name: "Steak")
     assert_equal menu, menu_item.menu
   end
+
+  test "cannot create menu_item without a name" do
+    menu = Menu.create!(name: "Lunch")
+    menu_item = menu.menu_items.new
+    assert_not menu_item.save, "MenuItem should not be saved without a name"
+    assert_includes menu_item.errors[:name], "can't be blank"
+  end
+
+  test "cannot create menu_item without menu_id" do
+    menu_item = MenuItem.new(name: "No Menu")
+    assert_not menu_item.save, "MenuItem should not be saved without menu_id"
+    assert_includes menu_item.errors[:menu_id], "can't be blank"
+  end
+
+  test "categories can be set and retrieved as array" do
+    menu = Menu.create!(name: "Specials")
+    menu_item = menu.menu_items.create!(name: "Soup", categories: [ "vegan", "starter" ])
+    assert_equal [ "vegan", "starter" ], menu_item.categories
+  end
+
+  test "categories defaults to empty array" do
+    menu = Menu.create!(name: "Sides")
+    menu_item = menu.menu_items.create!(name: "Fries")
+    assert_equal [], menu_item.categories
+  end
+
+  test "menu_item responds to categories as array" do
+    menu = Menu.create!(name: "Appetizers")
+    menu_item = menu.menu_items.create!(name: "Wings", categories: [ "spicy" ])
+    assert_kind_of Array, menu_item.categories
+  end
 end

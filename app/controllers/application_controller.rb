@@ -7,7 +7,7 @@ class ApplicationController < ActionController::Base
 
   rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
   rescue_from ActionController::ParameterMissing, with: :parameter_missing
-
+  rescue_from ActionDispatch::Http::Parameters::ParseError, with: :render_invalid_json
 
   def route_not_found
     render json: { error: "Route not found" }, status: :not_found
@@ -21,5 +21,9 @@ class ApplicationController < ActionController::Base
 
   def parameter_missing(e)
     render json: { error: e.message }, status: :bad_request
+  end
+
+  def render_invalid_json(e)
+    render json: { error: e.message }, status: :unprocessable_entity
   end
 end

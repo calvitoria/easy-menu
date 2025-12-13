@@ -1,5 +1,8 @@
 class MenusController < ApplicationController
+  include ValidatesCategoriesParam
+
   before_action :set_menu, only: [ :show, :update, :destroy ]
+  before_action :validate_categories_param, only: [ :create, :update ]
 
   def index
     @menus = Menu.includes(:menu_items).all
@@ -12,6 +15,7 @@ class MenusController < ApplicationController
 
   def create
     @menu = Menu.new(menu_params)
+
     if @menu.save
       render json: @menu, status: :created
     else
@@ -39,6 +43,11 @@ class MenusController < ApplicationController
   end
 
   def menu_params
-    params.require(:menu).permit(:name, :description, :active, categories: [])
+    params.require(:menu).permit(
+      :name,
+      :description,
+      :active,
+      categories: []
+    )
   end
 end

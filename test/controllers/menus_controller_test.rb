@@ -45,6 +45,20 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     assert_includes json["errors"], "Name can't be blank"
   end
 
+  test "POST /menus rejects non-array categories" do
+    post "/menus", params: {
+      menu: {
+        name: "Invalid",
+        categories: "Dinner"
+      }
+    }, as: :json
+
+    assert_response :unprocessable_entity
+
+    json = JSON.parse(@response.body)
+    assert_includes json["errors"], "categories must be an array of strings"
+  end
+
   test "PUT /menus/:id updates a menu" do
     menu = create(:menu, name: "Original", description: "Original description", active: false, categories: [ "Lunch" ])
 
@@ -65,6 +79,47 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
     json = JSON.parse(@response.body)
     assert_includes json["errors"], "Name can't be blank"
+  end
+
+  test "PUT /menus/:id rejects non-array categories" do
+    menu = create(:menu, name: "Menu")
+
+    put "/menus/#{menu.id}", params: {
+      menu: {
+        categories: "Invalid"
+      }
+    }, as: :json
+
+    assert_response :unprocessable_entity
+
+    json = JSON.parse(@response.body)
+    assert_includes json["errors"], "categories must be an array of strings"
+  end
+
+  test "PUT /menus/:id allows update without categories" do
+    menu = create(:menu, name: "Menu", categories: [ "Lunch" ])
+
+    put "/menus/#{menu.id}", params: {
+      menu: {
+        name: "Updated name"
+      }
+    }, as: :json
+
+    assert_response :success
+
+    menu.reload
+    assert_equal "Updated name", menu.name
+    assert_equal [ "Lunch" ], menu.categories
+  end
+
+  test "PUT /menus/:id returns 404 when menu does not exist" do
+    put "/menus/99999", params: {
+      menu: {
+        name: "Does not exist"
+      }
+    }, as: :json
+
+    assert_response :not_found
   end
 
   test "GET /menus/:menu_id/menu_items returns menu items for the menu" do
@@ -110,6 +165,14 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     assert_equal [ "Lunch" ], json["categories"]
     assert_equal 2, json["menu_items"].length
     assert_equal menu.id, json["id"]
+  end
+
+  test "GET /menus returns empty array when no menus exist" do
+    get "/menus"
+    assert_response :success
+
+    json = JSON.parse(@response.body)
+    assert_equal [], json
   end
 
   test "GET /menus/:id returns 404 for non-existent menu" do
