@@ -1,0 +1,20 @@
+meta {
+  name: Update Menu Item
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:3000/menu_items/7
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "menu_item": {
+      "name": "Veggie Burger",
+      "price": "10.99"
+    }
+  }
+}

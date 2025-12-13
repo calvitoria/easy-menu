@@ -1,0 +1,20 @@
+meta {
+  name: Create Menu Item for a Menu
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:3000/menus/2/menu_items
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "menu_item": {
+      "name": "Burger",
+      "price": "9.99"
+    }
+  }
+}

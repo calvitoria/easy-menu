@@ -1,0 +1,11 @@
+meta {
+  name: Get Single Menu
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://localhost:3000/menus/{{menu_id}}
+  body: none
+  auth: none
+}

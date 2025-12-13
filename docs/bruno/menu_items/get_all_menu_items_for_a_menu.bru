@@ -1,0 +1,16 @@
+meta {
+  name: Get All Menu Items for a Menu
+  type: http
+  seq: 1
+}
+
+get {
+  url: http://localhost:3000/menus/2/menu_items
+  body: none
+  auth: none
+}
+
+vars:pre-request {
+  host: http://localhost:3000
+  menu_id: 
+}
