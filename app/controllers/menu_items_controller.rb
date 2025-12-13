@@ -1,6 +1,6 @@
 class MenuItemsController < ApplicationController
-  before_action :set_menu, only: [:index, :create]
-  before_action :set_menu_item, only: [:show, :update, :destroy]
+  before_action :set_menu, only: [ :index, :create ]
+  before_action :set_menu_item, only: [ :show, :update, :destroy ]
 
   def index
     render json: @menu.menu_items

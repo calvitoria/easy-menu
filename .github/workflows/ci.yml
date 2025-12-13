@@ -83,12 +83,19 @@ jobs:
         with:
           bundler-cache: true
 
-      - name: Run tests
+      - name: Run tests with coverage
         env:
           RAILS_ENV: test
           # RAILS_MASTER_KEY: ${{ secrets.RAILS_MASTER_KEY }}
           # REDIS_URL: redis://localhost:6379/0
         run: bin/rails db:test:prepare test
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          if-no-files-found: ignore
 
   system-test:
     runs-on: ubuntu-latest
