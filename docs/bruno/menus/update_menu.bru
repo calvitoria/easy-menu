@@ -1,0 +1,19 @@
+meta {
+  name: Update Menu
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:3000/menus/{{menu_id}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "menu": {
+      "name": "My Updated Menu"
+    }
+  }
+}

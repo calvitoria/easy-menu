@@ -1,0 +1,23 @@
+meta {
+  name: Create Menu
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:3000/menus
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "menu": {
+      "name": "My Menu"
+    }
+  }
+}
+
+vars:pre-request {
+  host: http://localhost:3000
+}
