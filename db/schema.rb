@@ -10,10 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_13_132014) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_13_230526) do
   create_table "menu_items", force: :cascade do |t|
     t.text "categories", default: "[]", null: false
-    t.string "category"
     t.datetime "created_at", null: false
     t.text "description"
     t.integer "menu_id", null: false
