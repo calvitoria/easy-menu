@@ -1,5 +1,3 @@
-# db/seeds.rb
-
 MenuItem.destroy_all
 Menu.destroy_all
 
