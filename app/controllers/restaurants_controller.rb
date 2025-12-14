@@ -1,5 +1,5 @@
 class RestaurantsController < ApplicationController
-  before_action :set_restaurant, only: [:show, :update, :destroy]
+  before_action :set_restaurant, only: [ :show, :update, :destroy ]
 
   def index
     @restaurants = Restaurant.includes(menus: :menu_items).all
@@ -12,7 +12,7 @@ class RestaurantsController < ApplicationController
 
   def create
     @restaurant = Restaurant.new(restaurant_params)
-    
+
     if @restaurant.save
       render json: @restaurant, status: :created
     else
@@ -40,7 +40,7 @@ class RestaurantsController < ApplicationController
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Restaurant not found" }, status: :not_found
   end
-  
+
   def restaurant_params
     params.require(:restaurant).permit(
       :name,

@@ -2,19 +2,20 @@ class MenusController < ApplicationController
   include ValidatesCategoriesParam
 
   before_action :set_menu, only: [ :show, :update, :destroy ]
+  before_action :set_restaurant, only: [ :index, :create ]
   before_action :validate_categories_param, only: [ :create, :update ]
 
   def index
-    @menus = Menu.includes(:menu_items).all
+    @menus = @restaurant.menus.includes(:menu_items)
     render json: @menus, include: :menu_items
   end
 
   def show
-    render json: @menu, include: :menu_items
+    render json: @menu, include: [ :menu_items, :restaurant ]
   end
 
   def create
-    @menu = Menu.new(menu_params)
+    @menu = @restaurant.menus.new(menu_params)
 
     if @menu.save
       render json: @menu, status: :created
@@ -40,6 +41,14 @@ class MenusController < ApplicationController
 
   def set_menu
     @menu = Menu.find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Menu not found" }, status: :not_found
+  end
+
+  def set_restaurant
+    @restaurant = Restaurant.find(params[:restaurant_id])
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Restaurant not found" }, status: :not_found
   end
 
   def menu_params

@@ -10,12 +10,19 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     Menu.destroy_all
   end
 
-  test "GET /menus returns menus with items" do
-    menu = create(:menu, name: "Breakfast", description: "Morning meals", active: true, categories: [ "Breakfast" ], restaurant: @restaurant)
+  test "GET restaurants/:id/menus returns menus with items" do
+    menu = create(
+    :menu,
+    name: "Breakfast",
+    description: "Morning meals",
+    active: true,
+    restaurant_id: @restaurant.id,
+    categories: [ "Breakfast" ]
+    )
     create(:menu_item, menu: menu, name: "Coffee", price: 4.0)
     create(:menu_item, menu: menu, name: "Waffles", price: 10.5)
 
-    get "/menus"
+    get "/restaurants/#{@restaurant.id}/menus"
     assert_response :success
 
     json = JSON.parse(@response.body)
@@ -27,8 +34,9 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     assert_equal 2, json.first["menu_items"].length
   end
 
-  test "POST /menus creates a menu" do
-    post "/menus", params: { menu: { name: "Dinner", description: "Evening meals", active: true, categories: [ "Dinner" ], restaurant_id: @restaurant.id } }, as: :json
+  test "POST restaurants/:id/menus creates a menu" do
+    post "/restaurants/#{@restaurant.id}/menus", params:
+    { menu: { name: "Dinner", description: "Evening meals", active: true, restaurant_id: @restaurant.id, categories: [ "Dinner" ] } }, as: :json
     assert_response :created
 
     json = JSON.parse(@response.body)
@@ -40,28 +48,20 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     assert Menu.exists?(json["id"])
   end
 
-  test "POST /menus fails without name" do
-    post "/menus", params: { menu: { name: "", restaurant_id: @restaurant.id } }, as: :json
+  test "POST restaurants/:id/menus fails without name" do
+    post "/restaurants/#{@restaurant.id}/menus", params: { menu: { name: "", restaurant_id: @restaurant.id } }, as: :json
     assert_response :unprocessable_entity
 
     json = JSON.parse(@response.body)
     assert_includes json["errors"], "Name can't be blank"
   end
 
-  test "POST /menus fails without restaurant_id" do
-    post "/menus", params: { menu: { name: "Dinner", description: "Evening meals", active: true, categories: [ "Dinner" ] } }, as: :json
-    assert_response :unprocessable_entity
-
-    json = JSON.parse(@response.body)
-    assert_includes json["errors"], "Restaurant can't be blank"
-  end
-
-  test "POST /menus rejects non-array categories" do
-    post "/menus", params: {
+  test "POST restaurants/:id/menus rejects non-array categories" do
+    post "/restaurants/#{@restaurant.id}/menus", params: {
       menu: {
         name: "Invalid",
-        categories: "Dinner",
-        restaurant_id: @restaurant.id
+        restaurant_id: @restaurant.id,
+        categories: "Dinner"
       }
     }, as: :json
 
@@ -71,8 +71,20 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     assert_includes json["errors"], "categories must be an array of strings"
   end
 
+  test "POST restaurants/:id/menus returns 404 when restaurant does not exist" do
+    put "/restaurants/999999/menus", params: {
+      menu: {
+        name: "Does not exist",
+        restaurant_id: @restaurant.id
+      }
+    }, as: :json
+
+    assert_response :not_found
+  end
+
   test "PUT /menus/:id updates a menu" do
-    menu = create(:menu, name: "Original", description: "Original description", active: false, categories: [ "Lunch" ], restaurant: @restaurant)
+    menu = create(
+      :menu, name: "Original", description: "Original description", active: false, categories: [ "Lunch" ], restaurant: @restaurant)
 
     put "/menus/#{menu.id}", params: { menu: { name: "Updated", description: "Updated description", active: true, categories: [ "Dinner" ], restaurant_id: @restaurant.id } }, as: :json
     assert_response :success
@@ -184,8 +196,8 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     assert_equal menu.id, json["id"]
   end
 
-  test "GET /menus returns empty array when no menus exist" do
-    get "/menus"
+  test "GET restaurants/:id/menus returns empty array when no menus exist" do
+    get "/restaurants/#{@restaurant.id}/menus"
     assert_response :success
 
     json = JSON.parse(@response.body)
