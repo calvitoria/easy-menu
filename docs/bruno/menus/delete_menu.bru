@@ -1,0 +1,17 @@
+meta {
+  name: Delete Menu
+  type: http
+  seq: 5
+}
+
+delete {
+  url: http://localhost:3000/menus/{{menu_id}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code is 204", function() {
+    expect(res.status).to.equal(204);
+  });
+}

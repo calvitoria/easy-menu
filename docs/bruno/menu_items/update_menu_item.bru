@@ -1,0 +1,34 @@
+meta {
+  name: Update Menu Item
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:3000/menu_items/{{menu_item_id}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "menu_item": {
+      "name": "Veggie Burger",
+      "price": "10.99"
+    }
+  }
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+  test("Menu item name matches updated request payload", function() {
+    const requestName = req.body.json.menu_item.name;
+    expect(res.body.name).to.equal(requestName);
+  });
+  test("Menu item price matches updated request payload", function() {
+    const requestPrice = req.body.json.menu_item.price;
+    expect(res.body.price).to.equal(requestPrice);
+  });
+}

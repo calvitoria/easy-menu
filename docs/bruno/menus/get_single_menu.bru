@@ -1,0 +1,20 @@
+meta {
+  name: Get Single Menu
+  type: http
+  seq: 3
+}
+
+get {
+  url: http://localhost:3000/menus/{{menu_id}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+  test("Menu has id", function() {
+    expect(res.body).to.have.property("id");
+  });
+}

@@ -1,0 +1,41 @@
+meta {
+  name: Create Menu Item for a Menu
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:3000/menus/{{menu_id}}/menu_items
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "menu_item": {
+      "name": "Burger",
+      "price": "9.99"
+    }
+  }
+}
+
+tests {
+  test("Status code is 201", function() {
+    expect(res.status).to.equal(201);
+  });
+  test("Menu item name matches request payload", function() {
+    const requestName = req.body.json.menu_item.name;
+    expect(res.body.name).to.equal(requestName);
+  });
+  test("Menu item price matches request payload", function() {
+    const requestPrice = req.body.json.menu_item.price;
+    expect(res.body.price).to.equal(requestPrice);
+  });
+}
+
+script:post-response {
+  if (res.status === 201 && res.body && res.body.id) {
+    bruno.setEnvironmentVariable('menu_item_id', res.body.id);
+    console.log('Created Menu Item ID:', res.body.id);
+  }
+}

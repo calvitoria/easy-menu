@@ -1,0 +1,29 @@
+meta {
+  name: Update Menu
+  type: http
+  seq: 4
+}
+
+put {
+  url: http://localhost:3000/menus/{{menu_id}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "menu": {
+      "name": "Dinner - weekends"
+    }
+  }
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+  test("Menu name matches updated request payload", function() {
+    const requestName = req.body.json.menu.name;
+    expect(res.body.name).to.equal(requestName);
+  });
+}
