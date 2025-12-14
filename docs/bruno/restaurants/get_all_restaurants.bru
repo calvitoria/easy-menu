@@ -1,11 +1,11 @@
 meta {
-  name: Get Single Menu
+  name: Get All Restaurants
   type: http
-  seq: 3
+  seq: 1
 }
 
 get {
-  url: {{host}}/menus/{{menu_id}}
+  url: {{host}}/restaurants
   body: none
   auth: none
 }
@@ -13,8 +13,5 @@ get {
 tests {
   test("Status code is 200", function() {
     expect(res.status).to.equal(200);
-  });
-  test("Menu has id", function() {
-    expect(res.body).to.have.property("id");
   });
 }

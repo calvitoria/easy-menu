@@ -1,0 +1,24 @@
+meta {
+  name: create_menu_item_with_invalid_category
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{host}}/menus/1/menu_items
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Cheeseburger",
+    "description": "A classic cheeseburger",
+    "category": "Invalid Category",
+    "price": "9.99"
+  }
+}
+
+docs {
+  This request assumes a menu with id=1 exists and does not have "Invalid Category" in its categories list.
+}

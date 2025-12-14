@@ -1,0 +1,23 @@
+meta {
+  name: create_menu_item_with_no_name
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{host}}/menus/1/menu_items
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "description": "A classic cheeseburger",
+    "category": "Category 1",
+    "price": "9.99"
+  }
+}
+
+docs {
+  This request assumes a menu with id=1 exists.
+}

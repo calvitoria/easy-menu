@@ -1,0 +1,18 @@
+meta {
+  name: create_menu_with_invalid_categories
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{host}}/restaurants/{{restaurant_id}}/menus
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Menu with invalid categories",
+    "categories": "not-an-array"
+  }
+}

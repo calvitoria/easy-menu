@@ -1,0 +1,24 @@
+meta {
+  name: create_menu_item_for_nonexistent_menu
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{host}}/menus/9999/menu_items
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Cheeseburger",
+    "description": "A classic cheeseburger",
+    "category": "Category 1",
+    "price": "9.99"
+  }
+}
+
+docs {
+  This request is expected to fail because menu with id=9999 should not exist.
+}

@@ -1,0 +1,27 @@
+meta {
+  name: Update Restaurant
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{host}}/restaurants/{{restaurant_id}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "The Silver Spoon"
+  }
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+
+  test("Response has updated name", function() {
+    expect(res.body).to.have.property("name", "The Silver Spoon");
+  });
+}

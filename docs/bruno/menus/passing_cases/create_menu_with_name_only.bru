@@ -1,0 +1,17 @@
+meta {
+  name: create_menu_with_name_only
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{host}}/restaurants/{{restaurant_id}}/menus
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Menu with name only"
+  }
+}

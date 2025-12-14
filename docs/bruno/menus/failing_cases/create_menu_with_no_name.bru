@@ -1,0 +1,17 @@
+meta {
+  name: create_menu_with_no_name
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{host}}/restaurants/{{restaurant_id}}/menus
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "categories": ["Category 1"]
+  }
+}

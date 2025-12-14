@@ -1,0 +1,18 @@
+meta {
+  name: create_menu_with_empty_categories
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{host}}/restaurants/{{restaurant_id}}/menus
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "Menu with empty categories",
+    "categories": []
+  }
+}
