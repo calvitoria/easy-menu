@@ -4,12 +4,14 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
   include FactoryBot::Syntax::Methods
 
   setup do
+    Restaurant.destroy_all
+    @restaurant = create(:restaurant)
     MenuItem.destroy_all
     Menu.destroy_all
   end
 
   test "GET /menus returns menus with items" do
-    menu = create(:menu, name: "Breakfast", description: "Morning meals", active: true, categories: [ "Breakfast" ])
+    menu = create(:menu, name: "Breakfast", description: "Morning meals", active: true, categories: [ "Breakfast" ], restaurant: @restaurant)
     create(:menu_item, menu: menu, name: "Coffee", price: 4.0)
     create(:menu_item, menu: menu, name: "Waffles", price: 10.5)
 
@@ -26,7 +28,7 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "POST /menus creates a menu" do
-    post "/menus", params: { menu: { name: "Dinner", description: "Evening meals", active: true, categories: [ "Dinner" ] } }, as: :json
+    post "/menus", params: { menu: { name: "Dinner", description: "Evening meals", active: true, categories: [ "Dinner" ], restaurant_id: @restaurant.id } }, as: :json
     assert_response :created
 
     json = JSON.parse(@response.body)
@@ -34,22 +36,32 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Evening meals", json["description"]
     assert_equal true, json["active"]
     assert_equal [ "Dinner" ], json["categories"]
+    assert_equal @restaurant.id, json["restaurant_id"]
     assert Menu.exists?(json["id"])
   end
 
   test "POST /menus fails without name" do
-    post "/menus", params: { menu: { name: "" } }, as: :json
+    post "/menus", params: { menu: { name: "", restaurant_id: @restaurant.id } }, as: :json
     assert_response :unprocessable_entity
 
     json = JSON.parse(@response.body)
     assert_includes json["errors"], "Name can't be blank"
   end
 
+  test "POST /menus fails without restaurant_id" do
+    post "/menus", params: { menu: { name: "Dinner", description: "Evening meals", active: true, categories: [ "Dinner" ] } }, as: :json
+    assert_response :unprocessable_entity
+
+    json = JSON.parse(@response.body)
+    assert_includes json["errors"], "Restaurant can't be blank"
+  end
+
   test "POST /menus rejects non-array categories" do
     post "/menus", params: {
       menu: {
         name: "Invalid",
-        categories: "Dinner"
+        categories: "Dinner",
+        restaurant_id: @restaurant.id
       }
     }, as: :json
 
@@ -60,9 +72,9 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "PUT /menus/:id updates a menu" do
-    menu = create(:menu, name: "Original", description: "Original description", active: false, categories: [ "Lunch" ])
+    menu = create(:menu, name: "Original", description: "Original description", active: false, categories: [ "Lunch" ], restaurant: @restaurant)
 
-    put "/menus/#{menu.id}", params: { menu: { name: "Updated", description: "Updated description", active: true, categories: [ "Dinner" ] } }, as: :json
+    put "/menus/#{menu.id}", params: { menu: { name: "Updated", description: "Updated description", active: true, categories: [ "Dinner" ], restaurant_id: @restaurant.id } }, as: :json
     assert_response :success
 
     menu.reload
@@ -70,23 +82,25 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Updated description", menu.description
     assert_equal true, menu.active
     assert_equal [ "Dinner" ], menu.categories
+    assert_equal @restaurant.id, menu.restaurant_id
   end
 
   test "PUT /menus/:id validates name" do
-    menu = create(:menu, name: "Original")
+    menu = create(:menu, name: "Original", restaurant: @restaurant)
 
-    put "/menus/#{menu.id}", params: { menu: { name: "" } }, as: :json
+    put "/menus/#{menu.id}", params: { menu: { name: "", restaurant_id: @restaurant.id } }, as: :json
     assert_response :unprocessable_entity
     json = JSON.parse(@response.body)
     assert_includes json["errors"], "Name can't be blank"
   end
 
   test "PUT /menus/:id rejects non-array categories" do
-    menu = create(:menu, name: "Menu")
+    menu = create(:menu, name: "Menu", restaurant: @restaurant)
 
     put "/menus/#{menu.id}", params: {
       menu: {
-        categories: "Invalid"
+        categories: "Invalid",
+        restaurant_id: @restaurant.id
       }
     }, as: :json
 
@@ -97,11 +111,12 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "PUT /menus/:id allows update without categories" do
-    menu = create(:menu, name: "Menu", categories: [ "Lunch" ])
+    menu = create(:menu, name: "Menu", categories: [ "Lunch" ], restaurant: @restaurant)
 
     put "/menus/#{menu.id}", params: {
       menu: {
-        name: "Updated name"
+        name: "Updated name",
+        restaurant_id: @restaurant.id
       }
     }, as: :json
 
@@ -110,12 +125,14 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     menu.reload
     assert_equal "Updated name", menu.name
     assert_equal [ "Lunch" ], menu.categories
+    assert_equal @restaurant.id, menu.restaurant_id
   end
 
   test "PUT /menus/:id returns 404 when menu does not exist" do
     put "/menus/99999", params: {
       menu: {
-        name: "Does not exist"
+        name: "Does not exist",
+        restaurant_id: @restaurant.id
       }
     }, as: :json
 
@@ -123,10 +140,10 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "GET /menus/:menu_id/menu_items returns menu items for the menu" do
-    menu = create(:menu, name: "Specials")
+    menu = create(:menu, name: "Specials", restaurant: @restaurant)
     create(:menu_item, menu: menu, name: "Soup")
     create(:menu_item, menu: menu, name: "Salad")
-    other_menu = create(:menu, name: "Other")
+    other_menu = create(:menu, name: "Other", restaurant: @restaurant)
     create(:menu_item, menu: other_menu, name: "Burger")
 
     get "/menus/#{menu.id}/menu_items"
@@ -139,7 +156,7 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "DELETE /menus/:id destroys a menu and its items" do
-    menu = create(:menu, name: "To Be Deleted")
+    menu = create(:menu, name: "To Be Deleted", restaurant: @restaurant)
     create(:menu_item, menu: menu, name: "Item 1")
     create(:menu_item, menu: menu, name: "Item 2")
 
@@ -151,7 +168,7 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "GET /menus/:id returns a single menu with items" do
-    menu = create(:menu, name: "Lunch", description: "Midday meals", active: true, categories: [ "Lunch" ])
+    menu = create(:menu, name: "Lunch", description: "Midday meals", active: true, categories: [ "Lunch" ], restaurant: @restaurant)
     create(:menu_item, menu: menu, name: "Sandwich", price: 8.0)
     create(:menu_item, menu: menu, name: "Salad", price: 7.5)
 

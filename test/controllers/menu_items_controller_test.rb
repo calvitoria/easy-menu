@@ -4,12 +4,14 @@ class MenuItemsControllerTest < ActionDispatch::IntegrationTest
   include FactoryBot::Syntax::Methods
 
   setup do
-    @menu = create(:menu)
+    Restaurant.destroy_all
+    @restaurant = create(:restaurant)
+    @menu = create(:menu, restaurant: @restaurant)
     @menu_item = create(:menu_item, menu: @menu)
   end
 
   test "GET /menus/:menu_id/menu_items returns menu items for the specific menu" do
-    other_menu = create(:menu)
+    other_menu = create(:menu, restaurant: @restaurant)
     create(:menu_item, menu: other_menu)
 
     get "/menus/#{@menu.id}/menu_items"
@@ -25,7 +27,7 @@ class MenuItemsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     json = JSON.parse(@response.body)
     assert_equal @menu_item.name, json["name"]
-    assert_equal @menu_item.price.to_s, json["price"] # Price is returned as string from JSON
+    assert_equal @menu_item.price.to_s, json["price"]
     assert_equal @menu.id, json["menu_id"]
     assert_equal @menu_item.vegan, json["vegan"]
     assert_equal @menu_item.vegetarian, json["vegetarian"]

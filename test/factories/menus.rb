@@ -3,6 +3,7 @@ FactoryBot.define do
     sequence(:name) { |n| "Menu #{n}" }
     description { "Description for Menu #{name}" }
     active { true }
-    categories { [ "Breakfast", "Lunch", "Dinner" ].sample(rand(1..2)) }
+    categories { [] }
+    association :restaurant
   end
 end

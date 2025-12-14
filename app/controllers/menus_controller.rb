@@ -47,6 +47,7 @@ class MenusController < ApplicationController
       :name,
       :description,
       :active,
+      :restaurant_id,
       categories: []
     )
   end

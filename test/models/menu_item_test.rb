@@ -1,13 +1,19 @@
 require "test_helper"
 
 class MenuItemTest < ActiveSupport::TestCase
+  include FactoryBot::Syntax::Methods
+
+  setup do
+    @restaurant = create(:restaurant)
+    @menu = create(:menu, restaurant: @restaurant)
+  end
+
   test "can create, update, and destroy a menu_item with required fields" do
-    menu = Menu.create!(name: "Drinks")
-    menu_item = MenuItem.new(name: "Coffee", menu: menu)
+    menu_item = MenuItem.new(name: "Coffee", menu: @menu)
     assert menu_item.save, "MenuItem should be saved"
     assert menu_item.id.present?, "MenuItem should have an id"
     assert menu_item.price.present?, "MenuItem should have an price"
-    assert_equal menu.id, menu_item.menu_id, "MenuItem should have correct menu_id"
+    assert_equal @menu.id, menu_item.menu_id, "MenuItem should have correct menu_id"
     assert_equal "Coffee", menu_item.name
     assert menu_item.created_at.present?, "MenuItem should have created_at"
     assert menu_item.updated_at.present?, "MenuItem should have updated_at"
@@ -21,8 +27,7 @@ class MenuItemTest < ActiveSupport::TestCase
   end
 
   test "menu_item has default price of 0.0" do
-    menu = Menu.create!(name: "Desserts")
-    menu_item = menu.menu_items.create!(name: "Cake")
+    menu_item = @menu.menu_items.create!(name: "Cake")
     assert_equal BigDecimal("0.0"), menu_item.price, "MenuItem should have default price of 0.0"
   end
 
@@ -33,14 +38,12 @@ class MenuItemTest < ActiveSupport::TestCase
   end
 
   test "menu_item belongs to menu" do
-    menu = Menu.create!(name: "Dinner")
-    menu_item = menu.menu_items.create!(name: "Steak")
-    assert_equal menu, menu_item.menu
+    menu_item = @menu.menu_items.create!(name: "Steak")
+    assert_equal @menu, menu_item.menu
   end
 
   test "cannot create menu_item without a name" do
-    menu = Menu.create!(name: "Lunch")
-    menu_item = menu.menu_items.new
+    menu_item = @menu.menu_items.new
     assert_not menu_item.save, "MenuItem should not be saved without a name"
     assert_includes menu_item.errors[:name], "can't be blank"
   end
@@ -52,20 +55,22 @@ class MenuItemTest < ActiveSupport::TestCase
   end
 
   test "categories can be set and retrieved as array" do
-    menu = Menu.create!(name: "Specials")
-    menu_item = menu.menu_items.create!(name: "Soup", categories: [ "vegan", "starter" ])
+    menu_item = @menu.menu_items.create!(name: "Soup", categories: [ "vegan", "starter" ])
     assert_equal [ "vegan", "starter" ], menu_item.categories
   end
 
   test "categories defaults to empty array" do
-    menu = Menu.create!(name: "Sides")
-    menu_item = menu.menu_items.create!(name: "Fries")
+    menu_item = @menu.menu_items.create!(name: "Fries")
     assert_equal [], menu_item.categories
   end
 
   test "menu_item responds to categories as array" do
-    menu = Menu.create!(name: "Appetizers")
-    menu_item = menu.menu_items.create!(name: "Wings", categories: [ "spicy" ])
+    menu_item = @menu.menu_items.create!(name: "Wings", categories: [ "spicy" ])
     assert_kind_of Array, menu_item.categories
+  end
+
+  test "menu item can access restaurant through menu" do
+    menu_item = @menu.menu_items.create!(name: "Test Item")
+    assert_equal @restaurant, menu_item.menu.restaurant
   end
 end
