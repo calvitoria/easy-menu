@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_14_163105) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_15_132712) do
   create_table "menu_items", force: :cascade do |t|
     t.text "categories", default: "[]", null: false
     t.datetime "created_at", null: false
@@ -22,6 +22,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_14_163105) do
     t.datetime "updated_at", null: false
     t.boolean "vegan", default: false, null: false
     t.boolean "vegetarian", default: false, null: false
+    t.index "LOWER(name)", name: "index_menu_items_on_lowercase_name", unique: true
     t.index ["menu_id"], name: "index_menu_items_on_menu_id"
   end
 

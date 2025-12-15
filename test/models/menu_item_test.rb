@@ -73,4 +73,68 @@ class MenuItemTest < ActiveSupport::TestCase
     menu_item = @menu.menu_items.create!(name: "Test Item")
     assert_equal @restaurant, menu_item.menu.restaurant
   end
+
+  test "cannot create menu_item with duplicate name in same menu" do
+    menu_item1 = @menu.menu_items.create!(name: "Burger")
+    menu_item2 = @menu.menu_items.new(name: "Burger")
+
+    assert_not menu_item2.save, "MenuItem with duplicate name should not be saved"
+    assert_includes menu_item2.errors[:name], "has already been taken"
+  end
+
+  test "cannot create menu_item with duplicate name case-insensitive in same menu" do
+    menu_item1 = @menu.menu_items.create!(name: "Burger")
+    menu_item2 = @menu.menu_items.new(name: "burger")  # lowercase
+
+    assert_not menu_item2.save, "MenuItem with case-insensitive duplicate name should not be saved"
+    assert_includes menu_item2.errors[:name], "has already been taken"
+  end
+
+  test "cannot create menu_item with same name in different menus" do
+    menu_item1 = @menu.menu_items.create!(name: "Pizza")
+
+    menu2 = create(:menu, restaurant: @restaurant)
+    menu_item2 = menu2.menu_items.new(name: "Pizza")
+
+    assert_not menu_item2.save, "MenuItem with same name in different menu should NOT be saved (global uniqueness)"
+    assert_includes menu_item2.errors[:name], "has already been taken"
+  end
+
+  test "cannot create menu_item with same name in different restaurants" do
+    menu_item1 = @menu.menu_items.create!(name: "Salad")
+
+    restaurant2 = create(:restaurant)
+    menu2 = create(:menu, restaurant: restaurant2)
+    menu_item2 = menu2.menu_items.new(name: "Salad")
+
+    assert_not menu_item2.save, "MenuItem with same name in different restaurant should NOT be saved (global uniqueness)"
+    assert_includes menu_item2.errors[:name], "has already been taken"
+  end
+
+  test "can update menu_item to existing name if it's the same record" do
+    menu_item = @menu.menu_items.create!(name: "Original Name")
+    assert menu_item.update(name: "Original Name"), "Should be able to update with same name"
+  end
+
+  test "cannot update menu_item to duplicate name of another item in same menu" do
+    menu_item1 = @menu.menu_items.create!(name: "First Item")
+    menu_item2 = @menu.menu_items.create!(name: "Second Item")
+
+    assert_not menu_item2.update(name: "First Item"), "Should not update to duplicate name"
+    assert_includes menu_item2.errors[:name], "has already been taken"
+  end
+
+  test "uniqueness validation works with spaces and special characters" do
+    menu_item1 = @menu.menu_items.create!(name: "Fish & Chips")
+    menu_item2 = @menu.menu_items.new(name: "Fish & Chips")
+
+    assert_not menu_item2.save, "Should not save duplicate with special characters"
+  end
+
+  test "uniqueness validation works with apostrophes" do
+    menu_item1 = @menu.menu_items.create!(name: "O'Reilly Special")
+    menu_item2 = @menu.menu_items.new(name: "O'Reilly Special")
+
+    assert_not menu_item2.save, "Should not save duplicate with apostrophes"
+  end
 end
