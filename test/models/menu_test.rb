@@ -1,3 +1,4 @@
+# test/models/menu_test.rb
 require "test_helper"
 
 class MenuTest < ActiveSupport::TestCase
@@ -5,6 +6,9 @@ class MenuTest < ActiveSupport::TestCase
 
   setup do
     @restaurant = create(:restaurant)
+    @menu = create(:menu, restaurant: @restaurant)
+    @menu_item = create(:menu_item)
+    @menu_item2 = create(:menu_item)
   end
 
   test "can create, update, and destroy a menu with required fields" do
@@ -24,20 +28,27 @@ class MenuTest < ActiveSupport::TestCase
     assert_nil Menu.find_by(id: menu_id), "Menu should not exist after destroy"
   end
 
-  test "menu has many menu_items" do
-    menu = create(:menu, restaurant: @restaurant, name: "Lunch")
-    item1 = create(:menu_item, menu: menu, name: "Burger")
-    item2 = create(:menu_item, menu: menu, name: "Fries")
-    assert_equal 2, menu.menu_items.count
-    assert_includes menu.menu_items, item1
-    assert_includes menu.menu_items, item2
+  test "menu has many menu_items through menu_item_menus" do
+    @menu.menu_items << @menu_item
+    @menu.menu_items << @menu_item2
+
+    assert_equal 2, @menu.menu_items.count
+    assert_includes @menu.menu_items, @menu_item
+    assert_includes @menu.menu_items, @menu_item2
   end
 
-  test "destroying menu destroys its menu_items" do
-    menu = create(:menu, restaurant: @restaurant, name: "Snacks")
-    menu_item = create(:menu_item, menu: menu, name: "Chips")
-    menu.destroy
-    assert_nil MenuItem.find_by(id: menu_item.id), "MenuItem should be destroyed when menu is destroyed"
+  test "destroying menu destroys its menu_item associations but not menu_items" do
+    @menu.menu_items << @menu_item
+    @menu.menu_items << @menu_item2
+
+    assert_difference "MenuItem.count", 0 do
+      assert_difference "MenuItemMenu.count", -2 do
+        @menu.destroy
+      end
+    end
+
+    assert MenuItem.exists?(@menu_item.id)
+    assert MenuItem.exists?(@menu_item2.id)
   end
 
   test "cannot create menu without a name" do
@@ -72,5 +83,38 @@ class MenuTest < ActiveSupport::TestCase
     menu = create(:menu, restaurant: @restaurant)
     assert_instance_of Restaurant, menu.restaurant
     assert_equal @restaurant, menu.restaurant
+  end
+
+  test "menu can have multiple menu items" do
+    @menu.menu_items << @menu_item
+    @menu.menu_items << @menu_item2
+
+    assert_equal 2, @menu.menu_items.count
+  end
+
+  test "same menu item can belong to multiple menus" do
+    menu2 = create(:menu, restaurant: @restaurant)
+
+    @menu.menu_items << @menu_item
+    menu2.menu_items << @menu_item
+
+    assert_equal 1, @menu.menu_items.count
+    assert_equal 1, menu2.menu_items.count
+    assert_equal 2, @menu_item.menus.count
+  end
+
+  test "menu has many menu_item_menus" do
+    association = MenuItemMenu.create!(menu: @menu, menu_item: @menu_item)
+    assert_includes @menu.menu_item_menus, association
+  end
+
+  test "menu items are destroyed when menu is destroyed" do
+    @menu.menu_items << @menu_item
+    @menu.menu_items << @menu_item2
+
+    menu_id = @menu.id
+    @menu.destroy
+
+    assert_empty MenuItemMenu.where(menu_id: menu_id)
   end
 end

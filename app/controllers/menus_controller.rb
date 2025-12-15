@@ -1,7 +1,7 @@
 class MenusController < ApplicationController
   include ValidatesCategoriesParam
 
-  before_action :set_menu, only: [ :show, :update, :destroy ]
+  before_action :set_menu, only: [ :show, :update, :destroy, :add_menu_item, :remove_menu_item ]
   before_action :set_restaurant, only: [ :index, :create ]
   before_action :validate_categories_param, only: [ :create, :update ]
 
@@ -35,6 +35,37 @@ class MenusController < ApplicationController
   def destroy
     @menu.destroy
     head :no_content
+  end
+
+  def add_menu_item
+    menu_item = MenuItem.find(params[:menu_item_id])
+
+    if @menu.menu_items << menu_item
+      render json: {
+        message: "Menu item added successfully",
+        menu: @menu,
+        menu_item: menu_item
+      }
+    else
+      render json: { errors: "Could not add menu item to menu" }, status: :unprocessable_entity
+    end
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Menu item not found" }, status: :not_found
+  end
+
+  def remove_menu_item
+    menu_item = MenuItem.find(params[:menu_item_id])
+
+    if @menu.menu_items.delete(menu_item)
+      render json: {
+        message: "Menu item removed successfully",
+        menu: @menu
+      }
+    else
+      render json: { errors: "Could not remove menu item from menu" }, status: :unprocessable_entity
+    end
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Menu item not found" }, status: :not_found
   end
 
   private

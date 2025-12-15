@@ -1,0 +1,20 @@
+meta {
+  name: Get All Menu Items
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{host}}/menu_items
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+  test("Response is an array", function() {
+    expect(Array.isArray(res.body)).to.be.true;
+  });
+}

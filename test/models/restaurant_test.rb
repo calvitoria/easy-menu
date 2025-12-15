@@ -61,16 +61,4 @@ class RestaurantTest < ActiveSupport::TestCase
     assert_nil Menu.find_by(id: menu1.id), "Menu 1 should be destroyed"
     assert_nil Menu.find_by(id: menu2.id), "Menu 2 should be destroyed"
   end
-
-  test "has many menu_items through menus" do
-    restaurant = create(:restaurant)
-    menu1 = create(:menu, restaurant: restaurant)
-    menu2 = create(:menu, restaurant: restaurant)
-    item1 = create(:menu_item, menu: menu1)
-    item2 = create(:menu_item, menu: menu2)
-
-    assert_equal 2, restaurant.menu_items.count
-    assert_includes restaurant.menu_items, item1
-    assert_includes restaurant.menu_items, item2
-  end
 end

@@ -7,6 +7,5 @@ FactoryBot.define do
     categories { [ [ "Appetizer", "Main Course", "Dessert" ].sample(rand(1..2)) ] }
     description { "A delicious #{name.downcase} made with fresh ingredients." }
     spicy { [ true, false ].sample }
-    association :menu
   end
 end

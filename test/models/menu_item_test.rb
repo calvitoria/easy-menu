@@ -1,3 +1,4 @@
+# test/models/menu_item_test.rb
 require "test_helper"
 
 class MenuItemTest < ActiveSupport::TestCase
@@ -6,14 +7,15 @@ class MenuItemTest < ActiveSupport::TestCase
   setup do
     @restaurant = create(:restaurant)
     @menu = create(:menu, restaurant: @restaurant)
+    @menu2 = create(:menu, restaurant: @restaurant)
+    @menu_item = create(:menu_item)
   end
 
   test "can create, update, and destroy a menu_item with required fields" do
-    menu_item = MenuItem.new(name: "Coffee", menu: @menu)
+    menu_item = MenuItem.new(name: "Coffee")
     assert menu_item.save, "MenuItem should be saved"
     assert menu_item.id.present?, "MenuItem should have an id"
     assert menu_item.price.present?, "MenuItem should have an price"
-    assert_equal @menu.id, menu_item.menu_id, "MenuItem should have correct menu_id"
     assert_equal "Coffee", menu_item.name
     assert menu_item.created_at.present?, "MenuItem should have created_at"
     assert menu_item.updated_at.present?, "MenuItem should have updated_at"
@@ -27,114 +29,141 @@ class MenuItemTest < ActiveSupport::TestCase
   end
 
   test "menu_item has default price of 0.0" do
-    menu_item = @menu.menu_items.create!(name: "Cake")
+    menu_item = MenuItem.create!(name: "Cake")
     assert_equal BigDecimal("0.0"), menu_item.price, "MenuItem should have default price of 0.0"
   end
 
-  test "cannot create menu_item without menu" do
-    menu_item = MenuItem.new(name: "Orphan Item")
-    assert_not menu_item.save, "MenuItem should not be saved without a menu"
-    assert_includes menu_item.errors[:menu], "must exist"
-  end
+  test "menu_item belongs to many menus" do
+    @menu.menu_items << @menu_item
+    @menu2.menu_items << @menu_item
 
-  test "menu_item belongs to menu" do
-    menu_item = @menu.menu_items.create!(name: "Steak")
-    assert_equal @menu, menu_item.menu
+    assert_equal 2, @menu_item.menus.count
+    assert_includes @menu_item.menus, @menu
+    assert_includes @menu_item.menus, @menu2
   end
 
   test "cannot create menu_item without a name" do
-    menu_item = @menu.menu_items.new
+    menu_item = MenuItem.new
     assert_not menu_item.save, "MenuItem should not be saved without a name"
     assert_includes menu_item.errors[:name], "can't be blank"
   end
 
-  test "cannot create menu_item without menu_id" do
-    menu_item = MenuItem.new(name: "No Menu")
-    assert_not menu_item.save, "MenuItem should not be saved without menu_id"
-    assert_includes menu_item.errors[:menu_id], "can't be blank"
-  end
-
   test "categories can be set and retrieved as array" do
-    menu_item = @menu.menu_items.create!(name: "Soup", categories: [ "vegan", "starter" ])
+    menu_item = MenuItem.create!(name: "Soup", categories: [ "vegan", "starter" ])
     assert_equal [ "vegan", "starter" ], menu_item.categories
   end
 
   test "categories defaults to empty array" do
-    menu_item = @menu.menu_items.create!(name: "Fries")
+    menu_item = MenuItem.create!(name: "Fries")
     assert_equal [], menu_item.categories
   end
 
   test "menu_item responds to categories as array" do
-    menu_item = @menu.menu_items.create!(name: "Wings", categories: [ "spicy" ])
+    menu_item = MenuItem.create!(name: "Wings", categories: [ "spicy" ])
     assert_kind_of Array, menu_item.categories
   end
 
-  test "menu item can access restaurant through menu" do
-    menu_item = @menu.menu_items.create!(name: "Test Item")
-    assert_equal @restaurant, menu_item.menu.restaurant
-  end
-
-  test "cannot create menu_item with duplicate name in same menu" do
-    menu_item1 = @menu.menu_items.create!(name: "Burger")
-    menu_item2 = @menu.menu_items.new(name: "Burger")
+  test "cannot create menu_item with duplicate name (global uniqueness)" do
+    menu_item1 = MenuItem.create!(name: "Burger")
+    menu_item2 = MenuItem.new(name: "Burger")
 
     assert_not menu_item2.save, "MenuItem with duplicate name should not be saved"
     assert_includes menu_item2.errors[:name], "has already been taken"
   end
 
-  test "cannot create menu_item with duplicate name case-insensitive in same menu" do
-    menu_item1 = @menu.menu_items.create!(name: "Burger")
-    menu_item2 = @menu.menu_items.new(name: "burger")  # lowercase
+  test "cannot create menu_item with duplicate name case-insensitive" do
+    menu_item1 = MenuItem.create!(name: "Burger")
+    menu_item2 = MenuItem.new(name: "burger")
 
     assert_not menu_item2.save, "MenuItem with case-insensitive duplicate name should not be saved"
     assert_includes menu_item2.errors[:name], "has already been taken"
   end
 
-  test "cannot create menu_item with same name in different menus" do
-    menu_item1 = @menu.menu_items.create!(name: "Pizza")
-
-    menu2 = create(:menu, restaurant: @restaurant)
-    menu_item2 = menu2.menu_items.new(name: "Pizza")
-
-    assert_not menu_item2.save, "MenuItem with same name in different menu should NOT be saved (global uniqueness)"
-    assert_includes menu_item2.errors[:name], "has already been taken"
-  end
-
-  test "cannot create menu_item with same name in different restaurants" do
-    menu_item1 = @menu.menu_items.create!(name: "Salad")
-
-    restaurant2 = create(:restaurant)
-    menu2 = create(:menu, restaurant: restaurant2)
-    menu_item2 = menu2.menu_items.new(name: "Salad")
-
-    assert_not menu_item2.save, "MenuItem with same name in different restaurant should NOT be saved (global uniqueness)"
-    assert_includes menu_item2.errors[:name], "has already been taken"
-  end
-
   test "can update menu_item to existing name if it's the same record" do
-    menu_item = @menu.menu_items.create!(name: "Original Name")
+    menu_item = MenuItem.create!(name: "Original Name")
     assert menu_item.update(name: "Original Name"), "Should be able to update with same name"
   end
 
-  test "cannot update menu_item to duplicate name of another item in same menu" do
-    menu_item1 = @menu.menu_items.create!(name: "First Item")
-    menu_item2 = @menu.menu_items.create!(name: "Second Item")
+  test "cannot update menu_item to duplicate name of another item" do
+    menu_item1 = MenuItem.create!(name: "First Item")
+    menu_item2 = MenuItem.create!(name: "Second Item")
 
     assert_not menu_item2.update(name: "First Item"), "Should not update to duplicate name"
     assert_includes menu_item2.errors[:name], "has already been taken"
   end
 
   test "uniqueness validation works with spaces and special characters" do
-    menu_item1 = @menu.menu_items.create!(name: "Fish & Chips")
-    menu_item2 = @menu.menu_items.new(name: "Fish & Chips")
+    menu_item1 = MenuItem.create!(name: "Fish & Chips")
+    menu_item2 = MenuItem.new(name: "Fish & Chips")
 
     assert_not menu_item2.save, "Should not save duplicate with special characters"
   end
 
   test "uniqueness validation works with apostrophes" do
-    menu_item1 = @menu.menu_items.create!(name: "O'Reilly Special")
-    menu_item2 = @menu.menu_items.new(name: "O'Reilly Special")
+    menu_item1 = MenuItem.create!(name: "O'Reilly Special")
+    menu_item2 = MenuItem.new(name: "O'Reilly Special")
 
     assert_not menu_item2.save, "Should not save duplicate with apostrophes"
+  end
+
+  test "menu_item can belong to multiple menus" do
+    @menu.menu_items << @menu_item
+    @menu2.menu_items << @menu_item
+
+    assert_equal 2, @menu_item.menus.count
+    assert_equal 1, @menu.menu_items.count
+    assert_equal 1, @menu2.menu_items.count
+  end
+
+  test "destroying menu_item destroys its menu associations but not menus" do
+    @menu.menu_items << @menu_item
+    @menu2.menu_items << @menu_item
+
+    assert_difference "Menu.count", 0 do
+      assert_difference "MenuItemMenu.count", -2 do
+        @menu_item.destroy
+      end
+    end
+
+    assert Menu.exists?(@menu.id)
+    assert Menu.exists?(@menu2.id)
+  end
+
+  test "menu_item has many menu_item_menus" do
+    association = MenuItemMenu.create!(menu: @menu, menu_item: @menu_item)
+    assert_includes @menu_item.menu_item_menus, association
+  end
+
+  test "menu_item attributes can be set" do
+    menu_item = MenuItem.create!(
+      name: "Test Item",
+      price: 12.99,
+      vegan: true,
+      vegetarian: true,
+      spicy: false,
+      description: "A test item",
+      categories: [ "Test", "Special" ]
+    )
+
+    assert_equal "Test Item", menu_item.name
+    assert_equal 12.99, menu_item.price
+    assert_equal true, menu_item.vegan
+    assert_equal true, menu_item.vegetarian
+    assert_equal false, menu_item.spicy
+    assert_equal "A test item", menu_item.description
+    assert_equal [ "Test", "Special" ], menu_item.categories
+  end
+
+  test "menu_item boolean attributes default to false" do
+    menu_item = MenuItem.create!(name: "Default Item")
+
+    assert_equal false, menu_item.vegan
+    assert_equal false, menu_item.vegetarian
+    assert_equal false, menu_item.spicy
+  end
+
+  test "menu_item price precision is maintained" do
+    menu_item = MenuItem.create!(name: "Precision Test", price: 12.3456)
+    assert_equal BigDecimal("12.35"), menu_item.price
   end
 end

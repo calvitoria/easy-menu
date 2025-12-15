@@ -10,12 +10,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_15_132712) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_15_154855) do
+  create_table "menu_item_menus", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "menu_id", null: false
+    t.integer "menu_item_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["menu_id", "menu_item_id"], name: "index_menu_item_menus_on_menu_id_and_menu_item_id", unique: true
+    t.index ["menu_id"], name: "index_menu_item_menus_on_menu_id"
+    t.index ["menu_item_id"], name: "index_menu_item_menus_on_menu_item_id"
+  end
+
   create_table "menu_items", force: :cascade do |t|
     t.text "categories", default: "[]", null: false
     t.datetime "created_at", null: false
     t.text "description"
-    t.integer "menu_id", null: false
     t.string "name"
     t.decimal "price", precision: 8, scale: 2, default: "0.0"
     t.boolean "spicy", default: false, null: false
@@ -23,7 +32,6 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_15_132712) do
     t.boolean "vegan", default: false, null: false
     t.boolean "vegetarian", default: false, null: false
     t.index "LOWER(name)", name: "index_menu_items_on_lowercase_name", unique: true
-    t.index ["menu_id"], name: "index_menu_items_on_menu_id"
   end
 
   create_table "menus", force: :cascade do |t|
@@ -48,6 +56,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_15_132712) do
     t.index ["name"], name: "index_restaurants_on_name"
   end
 
-  add_foreign_key "menu_items", "menus"
+  add_foreign_key "menu_item_menus", "menu_items"
+  add_foreign_key "menu_item_menus", "menus"
   add_foreign_key "menus", "restaurants"
 end

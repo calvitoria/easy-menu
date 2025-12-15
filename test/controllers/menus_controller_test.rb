@@ -4,34 +4,44 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
   include FactoryBot::Syntax::Methods
 
   setup do
-    Restaurant.destroy_all
     @restaurant = create(:restaurant)
-    MenuItem.destroy_all
-    Menu.destroy_all
+    @menu = create(:menu, restaurant: @restaurant)
+    @menu_item = create(:menu_item)
+    @menu_item2 = create(:menu_item)
+
+    @menu.menu_items << @menu_item
+    @menu.menu_items << @menu_item2
   end
 
   test "GET restaurants/:id/menus returns menus with items" do
     menu = create(
-    :menu,
-    name: "Breakfast",
-    description: "Morning meals",
-    active: true,
-    restaurant_id: @restaurant.id,
-    categories: [ "Breakfast" ]
+      :menu,
+      name: "Breakfast",
+      description: "Morning meals",
+      active: true,
+      restaurant_id: @restaurant.id,
+      categories: [ "Breakfast" ]
     )
-    create(:menu_item, menu: menu, name: "Coffee", price: 4.0)
-    create(:menu_item, menu: menu, name: "Waffles", price: 10.5)
+
+    coffee = create(:menu_item, name: "Coffee", price: 4.0)
+    waffles = create(:menu_item, name: "Waffles", price: 10.5)
+
+    menu.menu_items << coffee
+    menu.menu_items << waffles
 
     get "/restaurants/#{@restaurant.id}/menus"
     assert_response :success
 
     json = JSON.parse(@response.body)
-    assert_equal 1, json.length
-    assert_equal "Breakfast", json.first["name"]
-    assert_equal "Morning meals", json.first["description"]
-    assert_equal true, json.first["active"]
-    assert_equal [ "Breakfast" ], json.first["categories"]
-    assert_equal 2, json.first["menu_items"].length
+
+    breakfast_menu = json.find { |m| m["name"] == "Breakfast" }
+
+    assert_not_nil breakfast_menu
+    assert_equal "Breakfast", breakfast_menu["name"]
+    assert_equal "Morning meals", breakfast_menu["description"]
+    assert_equal true, breakfast_menu["active"]
+    assert_equal [ "Breakfast" ], breakfast_menu["categories"]
+    assert_equal 2, breakfast_menu["menu_items"].length
   end
 
   test "POST restaurants/:id/menus creates a menu" do
@@ -118,7 +128,7 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
 
-    json = JSON.parse(@response.body)
+    json = JSON.parse(response.body)
     assert_includes json["errors"], "categories must be an array of strings"
   end
 
@@ -153,10 +163,15 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
 
   test "GET /menus/:menu_id/menu_items returns menu items for the menu" do
     menu = create(:menu, name: "Specials", restaurant: @restaurant)
-    create(:menu_item, menu: menu, name: "Soup")
-    create(:menu_item, menu: menu, name: "Salad")
+    soup = create(:menu_item, name: "Soup")
+    salad = create(:menu_item, name: "Salad")
+
+    menu.menu_items << soup
+    menu.menu_items << salad
+
     other_menu = create(:menu, name: "Other", restaurant: @restaurant)
-    create(:menu_item, menu: other_menu, name: "Burger")
+    burger = create(:menu_item, name: "Burger")
+    other_menu.menu_items << burger
 
     get "/menus/#{menu.id}/menu_items"
     assert_response :success
@@ -167,22 +182,33 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes names, "Burger"
   end
 
-  test "DELETE /menus/:id destroys a menu and its items" do
+  test "DELETE /menus/:id destroys a menu and its associations" do
     menu = create(:menu, name: "To Be Deleted", restaurant: @restaurant)
-    create(:menu_item, menu: menu, name: "Item 1")
-    create(:menu_item, menu: menu, name: "Item 2")
+    item1 = create(:menu_item, name: "Item 1")
+    item2 = create(:menu_item, name: "Item 2")
+
+    menu.menu_items << item1
+    menu.menu_items << item2
 
     delete "/menus/#{menu.id}"
 
     assert_response :no_content
     assert_not Menu.exists?(menu.id)
-    assert_equal 0, MenuItem.where(menu_id: menu.id).count
+
+    assert MenuItem.exists?(item1.id)
+    assert MenuItem.exists?(item2.id)
+
+    assert_empty item1.reload.menus
+    assert_empty item2.reload.menus
   end
 
   test "GET /menus/:id returns a single menu with items" do
     menu = create(:menu, name: "Lunch", description: "Midday meals", active: true, categories: [ "Lunch" ], restaurant: @restaurant)
-    create(:menu_item, menu: menu, name: "Sandwich", price: 8.0)
-    create(:menu_item, menu: menu, name: "Salad", price: 7.5)
+    sandwich = create(:menu_item, name: "Sandwich", price: 8.0)
+    salad = create(:menu_item, name: "Salad", price: 7.5)
+
+    menu.menu_items << sandwich
+    menu.menu_items << salad
 
     get "/menus/#{menu.id}"
     assert_response :success
@@ -197,6 +223,8 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "GET restaurants/:id/menus returns empty array when no menus exist" do
+    @menu.destroy
+
     get "/restaurants/#{@restaurant.id}/menus"
     assert_response :success
 
@@ -206,6 +234,42 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
 
   test "GET /menus/:id returns 404 for non-existent menu" do
     get "/menus/99999"
+    assert_response :not_found
+  end
+
+  test "POST /menus/:id/add_menu_item associates item with menu" do
+    new_item = create(:menu_item, name: "New Item")
+
+    assert_difference "@menu.menu_items.count", 1 do
+      post "/menus/#{@menu.id}/add_menu_item", params: { menu_item_id: new_item.id }, as: :json
+    end
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal "Menu item added successfully", json["message"]
+  end
+
+  test "POST /menus/:id/add_menu_item returns error for duplicate association" do
+    post "/menus/#{@menu.id}/add_menu_item", params: { menu_item_id: @menu_item.id }, as: :json
+
+    assert_response :unprocessable_entity
+  end
+
+  test "DELETE /menus/:id/remove_menu_item removes association" do
+    assert_difference "@menu.menu_items.count", -1 do
+      delete "/menus/#{@menu.id}/remove_menu_item", params: { menu_item_id: @menu_item.id }, as: :json
+    end
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal "Menu item removed successfully", json["message"]
+
+    assert MenuItem.exists?(@menu_item.id)
+  end
+
+  test "DELETE /menus/:id/remove_menu_item returns error for non-existent item" do
+    delete "/menus/#{@menu.id}/remove_menu_item", params: { menu_item_id: 99999 }, as: :json
+
     assert_response :not_found
   end
 end

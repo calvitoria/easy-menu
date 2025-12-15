@@ -19,7 +19,7 @@ The project follows a standard Ruby on Rails structure:
 -   Ruby `3.4.7` (as specified in `.ruby-version`)
 -   Bundler
 -   SQLite3
-or 
+or
 -   Docker and Docker Compose
 
 ### Installation (without Docker)
@@ -111,3 +111,32 @@ This project uses RuboCop for linting. To check the code for style violations, r
 ```bash
 rubocop
 ```
+
+## API Endpoints
+
+The routes are structured hierarchically:
+
+1.  **Restaurants**: The top-level resource.
+    *   `GET /restaurants`: List all restaurants.
+    *   `POST /restaurants`: Create a new restaurant.
+    *   `GET /restaurants/:id`: Show a specific restaurant.
+    *   `PATCH/PUT /restaurants/:id`: Update a specific restaurant.
+    *   `DELETE /restaurants/:id`: Delete a specific restaurant.
+
+2.  **Menus (nested under Restaurants)**: Menus belong to restaurants.
+    *   `GET /restaurants/:restaurant_id/menus`: List all menus for a specific restaurant.
+    *   `POST /restaurants/:restaurant_id/menus`: Create a new menu for a specific restaurant.
+    *   Individual menu actions (show, update, delete) are not nested:
+        *   `GET /menus/:id`: Show a specific menu (independent of restaurant in the URL).
+        *   `PATCH/PUT /menus/:id`: Update a specific menu.
+        *   `DELETE /menus/:id`: Delete a specific menu.
+        *   `POST /menus/:id/add_menu_item`: Add a menu item to a menu.
+        *   `DELETE /menus/:id/remove_menu_item`: Remove a menu item from a menu.
+
+3.  **Menu Items (nested under Menus)**: Menu items belong to menus.
+    *   `GET /menus/:menu_id/menu_items`: List all menu items for a specific menu.
+    *   `POST /menus/:menu_id/menu_items`: Create a new menu item for a specific menu.
+    *   Individual menu item actions (show, update, delete) are not nested:
+        *   `GET /menu_items/:id`: Show a specific menu item (independent of menu in the URL).
+        *   `PATCH/PUT /menu_items/:id`: Update a specific menu item.
+        *   `DELETE /menu_items/:id`: Delete a specific menu item.

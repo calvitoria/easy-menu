@@ -6,26 +6,52 @@ class MenuItemsController < ApplicationController
   before_action :validate_categories_param, only: [ :create, :update ]
 
   def index
-    render json: @menu.menu_items
+    @menu_items = @menu ? @menu.menu_items : MenuItem.all
+    render json: @menu_items, include: @menu ? nil : :menus
   end
 
   def show
-    render json: @menu_item
+    render json: @menu_item, include: :menus
   end
 
   def create
-    @menu_item = @menu.menu_items.new(menu_item_params)
+    @menu_item = MenuItem.new(menu_item_params)
+
+    if @menu
+      @menu_item.menus << @menu
+    end
+
+    if params[:menu_ids].present?
+      begin
+        @menu_item.menu_ids = Array(params[:menu_ids])
+      rescue ActiveRecord::RecordNotFound => e
+        return render json: { error: "One or more menus not found" }, status: :unprocessable_entity
+      end
+    end
 
     if @menu_item.save
-      render json: @menu_item, status: :created
+      render json: @menu_item, include: :menus, status: :created
     else
       render json: { errors: @menu_item.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   def update
-    if @menu_item.update(menu_item_params)
-      render json: @menu_item
+    if params.key?(:menu_ids)
+      begin
+        menu_ids = Array(params[:menu_ids])
+        if menu_ids.empty?
+          @menu_item.menu_item_menus.destroy_all
+        else
+          @menu_item.menu_ids = menu_ids
+        end
+      rescue ActiveRecord::RecordNotFound => e
+        return render json: { error: "One or more menus not found" }, status: :unprocessable_entity
+      end
+    end
+
+    if @menu_item.update(menu_item_params.except(:menu_ids))
+      render json: @menu_item, include: :menus
     else
       render json: { errors: @menu_item.errors.full_messages }, status: :unprocessable_entity
     end
@@ -39,7 +65,7 @@ class MenuItemsController < ApplicationController
   private
 
   def set_menu
-    @menu = Menu.find(params[:menu_id])
+    @menu = Menu.find(params[:menu_id]) if params[:menu_id].present?
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Menu not found" }, status: :not_found
   end
