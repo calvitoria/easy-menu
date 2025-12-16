@@ -2,6 +2,7 @@
   "version": "1",
   "name": "Menu Management API",
   "type": "collection",
+  "description": "A collection of API requests for the Menu Management API, covering Restaurants, Menus, and Menu Items.",
   "ignore": [
     "node_modules",
     ".git"

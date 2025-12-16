@@ -1,0 +1,17 @@
+meta {
+  name: Get All Restaurants
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{host}}/restaurants
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code is 200", function() {
+    expect(res.status).to.equal(200);
+  });
+}

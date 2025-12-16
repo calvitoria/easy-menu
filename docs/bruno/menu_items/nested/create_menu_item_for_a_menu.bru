@@ -1,11 +1,11 @@
 meta {
   name: Create Menu Item for a Menu
   type: http
-  seq: 2
+  seq: 1
 }
 
 post {
-  url: http://localhost:3000/menus/{{menu_id}}/menu_items
+  url: {{host}}/menus/{{menu_id}}/menu_items
   body: json
   auth: none
 }
@@ -16,6 +16,13 @@ body:json {
       "name": "Burger",
       "price": "9.99"
     }
+  }
+}
+
+script:post-response {
+  if (res.status === 201 && res.body && res.body.id) {
+    bruno.setEnvironmentVariable('menu_item_id', res.body.id);
+    console.log('Created Menu Item ID:', res.body.id);
   }
 }
 
@@ -31,11 +38,4 @@ tests {
     const requestPrice = req.body.json.menu_item.price;
     expect(res.body.price).to.equal(requestPrice);
   });
-}
-
-script:post-response {
-  if (res.status === 201 && res.body && res.body.id) {
-    bruno.setEnvironmentVariable('menu_item_id', res.body.id);
-    console.log('Created Menu Item ID:', res.body.id);
-  }
 }

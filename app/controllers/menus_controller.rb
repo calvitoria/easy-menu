@@ -1,53 +1,80 @@
 class MenusController < ApplicationController
-  include ValidatesCategoriesParam
+  load_resource :menu, only: [ :show, :update, :destroy, :add_menu_item, :remove_menu_item ]
+  load_resource :restaurant, param: :restaurant_id, only: [ :create ]
 
-  before_action :set_menu, only: [ :show, :update, :destroy ]
-  before_action :validate_categories_param, only: [ :create, :update ]
+  before_action only: [ :create, :update ] do
+    validate_array_of_strings :categories, scope: :menu
+  end
 
   def index
-    @menus = Menu.includes(:menu_items).all
-    render json: @menus, include: :menu_items
+    if params[:restaurant_id]
+      @restaurant = Restaurant.find(params[:restaurant_id])
+      @menus = @restaurant.menus.with_associations
+    else
+      @menus = Menu.with_associations
+    end
+
+    render_ok(@menus, include: :menu_items)
   end
 
   def show
-    render json: @menu, include: :menu_items
+    render_ok(@menu, include: [ :menu_items, :restaurant ])
   end
 
   def create
-    @menu = Menu.new(menu_params)
+    @menu = @restaurant.menus.new(menu_params)
 
     if @menu.save
-      render json: @menu, status: :created
+      render_created(@menu)
     else
-      render json: { errors: @menu.errors.full_messages }, status: :unprocessable_entity
+      render_errors(@menu)
     end
   end
 
   def update
     if @menu.update(menu_params)
-      render json: @menu
+      render_ok(@menu)
     else
-      render json: { errors: @menu.errors.full_messages }, status: :unprocessable_entity
+      render_errors(@menu)
     end
   end
 
   def destroy
     @menu.destroy
-    head :no_content
+    render_no_content
+  end
+
+  def add_menu_item
+    result = MenuManagementService.add_menu_item(@menu, params[:menu_item_id])
+
+    if result.success
+      render_ok({
+        message: "Menu item added successfully",
+        menu: result.data[:menu],
+        menu_item: result.data[:menu_item]
+      })
+    else
+      render_service_error(result, status: result.status || :unprocessable_entity)
+    end
+  end
+
+  def remove_menu_item
+    result = MenuManagementService.remove_menu_item(@menu, params[:menu_item_id])
+
+    if result.success
+      render_ok({
+        message: "Menu item removed successfully",
+        menu: result.data[:menu]
+      })
+    else
+      render_service_error(result, status: result.status || :unprocessable_entity)
+    end
   end
 
   private
 
-  def set_menu
-    @menu = Menu.find(params[:id])
-  end
-
   def menu_params
-    params.require(:menu).permit(
-      :name,
-      :description,
-      :active,
-      categories: []
-    )
+    permitted = [ :name, :description, :active, categories: [] ]
+    params.require(:menu).permit(permitted)
   end
 end

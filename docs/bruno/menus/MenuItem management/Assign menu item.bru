@@ -1,0 +1,22 @@
+meta {
+  name: Assign menu item
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{host}}/menus/{{menu_id}}/add_menu_item
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "menu_item_id": 5
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

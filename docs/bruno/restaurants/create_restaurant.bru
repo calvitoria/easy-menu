@@ -1,0 +1,33 @@
+meta {
+  name: Create Restaurant
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{host}}/restaurants
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "name": "The Golden Spoon"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 && res.body && res.body.id) {
+    bruno.setEnvironmentVariable('restaurant_id', res.body.id);
+  }
+}
+
+tests {
+  test("Status code is 201", function() {
+    expect(res.status).to.equal(201);
+  });
+
+  test("Response has name", function() {
+    expect(res.body).to.have.property("name", "The Golden Spoon");
+  });
+}

@@ -1,11 +1,11 @@
 meta {
   name: Get All Menu Items for a Menu
   type: http
-  seq: 1
+  seq: 2
 }
 
 get {
-  url: http://localhost:3000/menus/4/menu_items
+  url: {{host}}/menus/{{menu_id}}/menu_items
   body: none
   auth: none
 }

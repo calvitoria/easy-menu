@@ -1,0 +1,17 @@
+meta {
+  name: Delete Restaurant
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{host}}/restaurants/{{restaurant_id}}
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code is 204", function() {
+    expect(res.status).to.equal(204);
+  });
+}
