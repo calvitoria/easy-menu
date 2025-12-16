@@ -1,4 +1,7 @@
 class ApplicationController < ActionController::Base
+  include LoadResource
+  include ValidateArrayParam
+
   allow_browser versions: :modern
 
   protect_from_forgery unless: -> { request.format.json? }

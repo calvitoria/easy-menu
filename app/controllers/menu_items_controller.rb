@@ -1,9 +1,14 @@
 class MenuItemsController < ApplicationController
-  include ValidatesCategoriesParam
+  include LoadResource
+  include ValidateArrayParam
 
-  before_action :set_menu, only: [ :index, :create ]
-  before_action :set_menu_item, only: [ :show, :update, :destroy ]
-  before_action :validate_categories_param, only: [ :create, :update ]
+  load_resource :menu, param: :menu_id, only: [ :index, :create ]
+  load_resource :menu_item, only: [ :show, :update, :destroy ]
+
+  before_action only: [ :create, :update ] do
+    validate_array_of_strings :categories, scope: :menu_item
+    validate_array_of_ids :menu_ids if params.key?(:menu_ids)
+  end
 
   def index
     @menu_items = @menu ? @menu.menu_items : MenuItem.all
@@ -63,18 +68,6 @@ class MenuItemsController < ApplicationController
   end
 
   private
-
-  def set_menu
-    @menu = Menu.find(params[:menu_id]) if params[:menu_id].present?
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: "Menu not found" }, status: :not_found
-  end
-
-  def set_menu_item
-    @menu_item = MenuItem.find(params[:id])
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: "Menu item not found" }, status: :not_found
-  end
 
   def menu_item_params
     params.require(:menu_item).permit(

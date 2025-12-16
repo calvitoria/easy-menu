@@ -10,7 +10,7 @@ Rails.application.routes.draw do
 
   resources :menu_items, except: [ :new, :edit ]
 
-  resources :menus, only: [] do
+  resources :menus, except: [ :new, :edit ] do
     member do
       post :add_menu_item
       delete :remove_menu_item

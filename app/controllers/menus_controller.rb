@@ -1,9 +1,13 @@
 class MenusController < ApplicationController
-  include ValidatesCategoriesParam
+  include LoadResource
+  include ValidateArrayParam
 
-  before_action :set_menu, only: [ :show, :update, :destroy, :add_menu_item, :remove_menu_item ]
-  before_action :set_restaurant, only: [ :index, :create ]
-  before_action :validate_categories_param, only: [ :create, :update ]
+  load_resource :menu, only: [ :show, :update, :destroy, :add_menu_item, :remove_menu_item ]
+  load_resource :restaurant, param: :restaurant_id, only: [ :index, :create ]
+
+  before_action only: [ :create, :update ] do
+    validate_array_of_strings :categories, scope: :menu
+  end
 
   def index
     @menus = @restaurant.menus.includes(:menu_items)
@@ -40,15 +44,19 @@ class MenusController < ApplicationController
   def add_menu_item
     menu_item = MenuItem.find(params[:menu_item_id])
 
-    if @menu.menu_items << menu_item
-      render json: {
-        message: "Menu item added successfully",
-        menu: @menu,
-        menu_item: menu_item
-      }
-    else
-      render json: { errors: "Could not add menu item to menu" }, status: :unprocessable_entity
+    if @menu.menu_items.exists?(menu_item.id)
+      render json: { errors: "Could not add menu item to menu" },
+             status: :unprocessable_entity
+      return
     end
+
+    @menu.menu_items << menu_item
+
+    render json: {
+      message: "Menu item added successfully",
+      menu: @menu,
+      menu_item: menu_item
+    }
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Menu item not found" }, status: :not_found
   end
@@ -66,20 +74,6 @@ class MenusController < ApplicationController
     end
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Menu item not found" }, status: :not_found
-  end
-
-  private
-
-  def set_menu
-    @menu = Menu.find(params[:id])
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: "Menu not found" }, status: :not_found
-  end
-
-  def set_restaurant
-    @restaurant = Restaurant.find(params[:restaurant_id])
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: "Restaurant not found" }, status: :not_found
   end
 
   def menu_params

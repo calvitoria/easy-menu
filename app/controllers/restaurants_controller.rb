@@ -1,5 +1,7 @@
 class RestaurantsController < ApplicationController
-  before_action :set_restaurant, only: [ :show, :update, :destroy ]
+  include LoadResource
+
+  load_resource :restaurant, only: [ :show, :update, :destroy ]
 
   def index
     @restaurants = Restaurant.includes(menus: :menu_items).all
@@ -31,14 +33,6 @@ class RestaurantsController < ApplicationController
   def destroy
     @restaurant.destroy
     head :no_content
-  end
-
-  private
-
-  def set_restaurant
-    @restaurant = Restaurant.find(params[:id])
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: "Restaurant not found" }, status: :not_found
   end
 
   def restaurant_params

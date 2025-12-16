@@ -78,7 +78,7 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
 
     json = JSON.parse(@response.body)
-    assert_includes json["errors"], "categories must be an array of strings"
+    assert_includes json["errors"], "categories must be an array"
   end
 
   test "POST restaurants/:id/menus returns 404 when restaurant does not exist" do
@@ -129,7 +129,7 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
 
     json = JSON.parse(response.body)
-    assert_includes json["errors"], "categories must be an array of strings"
+    assert_includes json["errors"], "categories must be an array"
   end
 
   test "PUT /menus/:id allows update without categories" do

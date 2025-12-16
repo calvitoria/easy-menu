@@ -154,7 +154,7 @@ class MenuItemsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     json = JSON.parse(@response.body)
-    assert_includes json["errors"], "categories must be an array of strings"
+    assert_includes json["errors"], "categories must be an array"
   end
 
   test "POST /menus/:menu_id/menu_items fails with invalid params" do
@@ -257,7 +257,7 @@ class MenuItemsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_entity
     json = JSON.parse(@response.body)
-    assert_includes json["errors"], "categories must be an array of strings"
+    assert_includes json["errors"], "categories must be an array"
   end
 
   test "DELETE /menu_items/:id destroys a menu item and its associations" do
