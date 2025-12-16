@@ -7,4 +7,8 @@ class MenuItem < ApplicationRecord
   validates :name, presence: true, uniqueness: { case_sensitive: false }
 
   json_array_field :categories
+
+  def self.with_associations
+    includes(:menus)
+  end
 end

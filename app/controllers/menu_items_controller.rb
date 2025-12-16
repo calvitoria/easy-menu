@@ -1,7 +1,4 @@
 class MenuItemsController < ApplicationController
-  include LoadResource
-  include ValidateArrayParam
-
   load_resource :menu, param: :menu_id, only: [ :index, :create ]
   load_resource :menu_item, only: [ :show, :update, :destroy ]
 
@@ -11,60 +8,54 @@ class MenuItemsController < ApplicationController
   end
 
   def index
-    @menu_items = @menu ? @menu.menu_items : MenuItem.all
-    render json: @menu_items, include: @menu ? nil : :menus
+    if @menu
+      @menu_items = @menu.menu_items.with_associations
+      render_ok(@menu_items, include: :menus)
+    else
+      @menu_items = MenuItem.with_associations
+      render_ok(@menu_items, include: :menus)
+    end
   end
 
   def show
-    render json: @menu_item, include: :menus
+    render_ok(@menu_item, include: :menus)
   end
 
   def create
-    @menu_item = MenuItem.new(menu_item_params)
+    @menu_item = MenuItem.new
 
-    if @menu
-      @menu_item.menus << @menu
-    end
+    result = MenuItemAssignmentService.assign_menus_to_item(
+      menu_item: @menu_item,
+      menu_ids_param: params[:menu_ids],
+      menu_from_route: @menu,
+      menu_item_attributes: menu_item_params
+    )
 
-    if params[:menu_ids].present?
-      begin
-        @menu_item.menu_ids = Array(params[:menu_ids])
-      rescue ActiveRecord::RecordNotFound => e
-        return render json: { error: "One or more menus not found" }, status: :unprocessable_entity
-      end
-    end
-
-    if @menu_item.save
-      render json: @menu_item, include: :menus, status: :created
+    if result.success
+      render_created(result.data[:menu_item], include: :menus)
     else
-      render json: { errors: @menu_item.errors.full_messages }, status: :unprocessable_entity
+      render_service_error(result)
     end
   end
 
   def update
-    if params.key?(:menu_ids)
-      begin
-        menu_ids = Array(params[:menu_ids])
-        if menu_ids.empty?
-          @menu_item.menu_item_menus.destroy_all
-        else
-          @menu_item.menu_ids = menu_ids
-        end
-      rescue ActiveRecord::RecordNotFound => e
-        return render json: { error: "One or more menus not found" }, status: :unprocessable_entity
-      end
-    end
+    result = MenuItemAssignmentService.assign_menus_to_item(
+      menu_item: @menu_item,
+      menu_ids_param: params[:menu_ids],
+      menu_from_route: nil,
+      menu_item_attributes: menu_item_params
+    )
 
-    if @menu_item.update(menu_item_params.except(:menu_ids))
-      render json: @menu_item, include: :menus
+    if result.success
+      render_ok(@menu_item, include: :menus)
     else
-      render json: { errors: @menu_item.errors.full_messages }, status: :unprocessable_entity
+      render_service_error(result)
     end
   end
 
   def destroy
     @menu_item.destroy
-    head :no_content
+    render_no_content
   end
 
   private
