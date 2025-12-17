@@ -12,7 +12,8 @@ post {
 
 body:json {
   {
-    "name": "The Golden Spoon"
+    "name": "The Golden Spoon",
+    "email": "gdnspn@email.com"
   }
 }
 
@@ -26,7 +27,7 @@ tests {
   test("Status code is 201", function() {
     expect(res.status).to.equal(201);
   });
-
+  
   test("Response has name", function() {
     expect(res.body).to.have.property("name", "The Golden Spoon");
   });

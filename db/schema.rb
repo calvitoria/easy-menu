@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_15_154855) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_17_003524) do
   create_table "menu_item_menus", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "menu_id", null: false
@@ -52,6 +52,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_15_154855) do
     t.string "email"
     t.string "name"
     t.datetime "updated_at", null: false
+    t.index "LOWER(name)", name: "index_restaurants_on_lowercase_name", unique: true
     t.index ["email"], name: "index_restaurants_on_email", unique: true
     t.index ["name"], name: "index_restaurants_on_name"
   end

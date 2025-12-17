@@ -26,6 +26,36 @@ class RestaurantTest < ActiveSupport::TestCase
     assert_includes restaurant.errors[:name], "can't be blank"
   end
 
+  test "uniqueness validation for name works with spaces and special characters" do
+    restaurant1 = Restaurant.create!(
+      name: "Nostro Sapore!",
+      email: "nostro@sap.com"
+    )
+    
+    restaurant2 = Restaurant.new(
+      name: "Nostro Sapore!",
+      email: "nostro@sapore.com"
+    )
+  
+    assert_not restaurant2.save, "Should not save duplicate with special characters"
+    assert_includes restaurant2.errors[:name], "has already been taken"
+  end
+  
+  test "uniqueness validation for name works with apostrophes" do
+    restaurant1 = Restaurant.create!(
+      name: "O'kpos",
+      email: "nostro@sap.com"
+    )
+    
+    restaurant2 = Restaurant.new(
+      name: "O'kpos",
+      email: "nostro@sapore.com"
+    )
+    
+    assert_not restaurant2.save, "Should not save duplicate with apostrophes"
+    assert_includes restaurant2.errors[:name], "has already been taken"
+  end
+
   test "validates presence of email" do
     restaurant = build(:restaurant, email: nil)
     assert_not restaurant.valid?, "Restaurant should not be valid without an email"
