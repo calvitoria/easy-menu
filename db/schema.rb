@@ -10,7 +10,25 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_15_154855) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_17_020949) do
+  create_table "import_audit_logs", force: :cascade do |t|
+    t.datetime "completed_at"
+    t.datetime "created_at", null: false
+    t.text "details"
+    t.text "error_message"
+    t.integer "failed_records", default: 0
+    t.string "file_name"
+    t.string "import_type", null: false
+    t.datetime "started_at"
+    t.string "status", null: false
+    t.integer "successful_records", default: 0
+    t.integer "total_records", default: 0
+    t.datetime "updated_at", null: false
+    t.index ["created_at"], name: "index_import_audit_logs_on_created_at"
+    t.index ["import_type"], name: "index_import_audit_logs_on_import_type"
+    t.index ["status"], name: "index_import_audit_logs_on_status"
+  end
+
   create_table "menu_item_menus", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "menu_id", null: false
@@ -52,7 +70,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_15_154855) do
     t.string "email"
     t.string "name"
     t.datetime "updated_at", null: false
-    t.index ["email"], name: "index_restaurants_on_email", unique: true
+    t.index "LOWER(name)", name: "index_restaurants_on_lowercase_name", unique: true
+    t.index ["email"], name: "index_restaurants_on_email"
     t.index ["name"], name: "index_restaurants_on_name"
   end
 

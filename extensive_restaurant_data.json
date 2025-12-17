@@ -1,0 +1,154 @@
+{
+  "restaurants": [
+    {
+      "name": "Poppo's Cafe",
+      "description": "A cozy neighborhood cafe known for comfort food and fresh ingredients.",
+      "address": "123 Main Street, Springfield",
+      "email": "contact@popposcafe.com",
+      "rating": 4.6,
+      "opening_hours": {
+        "monday_friday": "08:00-22:00",
+        "weekend": "09:00-23:00"
+      },
+      "menus": [
+        {
+          "name": "lunch",
+          "description": "Light and fast meals for a quick break.",
+          "active": true,
+          "seasonal": false,
+          "categories": ["Burgers", "Salads"],
+          "menu_items": [
+            {
+              "name": "Classic Burger",
+              "price": 9.00,
+              "description": "Beef patty, lettuce, tomato, and house sauce.",
+              "categories": ["Burger"],
+              "spicy": false,
+              "vegan": false,
+              "vegetarian": false,
+              "nutrition": {
+                "calories": 540,
+                "protein_g": 28
+              },
+              "tags": ["popular", "chef-choice"]
+            },
+            {
+              "name": "Small Salad",
+              "price": 5.00,
+              "description": "Fresh greens with lemon vinaigrette.",
+              "categories": ["Salad"],
+              "spicy": false,
+              "vegan": true,
+              "vegetarian": true,
+              "allergens": ["nuts"],
+              "availability": {
+                "from": "11:00",
+                "to": "16:00"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Empty Menu"
+        },
+        {
+          "name": "dinner",
+          "description": "Hearty meals to end the day.",
+          "active": true,
+          "categories": ["Burgers", "Salads", "Specials"],
+          "menu_items": [
+            {
+              "name": "Burger",
+              "price": 15.00,
+              "categories": ["Burger"],
+              "spicy": true,
+              "vegan": false,
+              "vegetarian": false,
+              "chef_notes": "Ask for medium rare for best flavor."
+            },
+            {
+              "name": "Large Salad",
+              "price": 8.00,
+              "categories": ["Salad"],
+              "spicy": false,
+              "vegan": true,
+              "vegetarian": true,
+              "extras": [
+                {
+                  "name": "Grilled Chicken",
+                  "price": 3.50
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Casa del Poppo",
+      "description": "A bold fusion kitchen with indulgent flavors.",
+      "email": "hello@casadelpoppo.com",
+      "socials": {
+        "instagram": "@casadelpoppo",
+        "tiktok": "@poppo.house"
+      },
+      "menus": [
+        {
+          "name": "lunch",
+          "active": true,
+          "categories": ["Fast Food", "Snacks"],
+          "dishes": [
+            {
+              "name": "Chicken Wings",
+              "price": 9.00,
+              "sauce": "BBQ",
+              "spice_level": 2,
+              "categories": ["Appetizer"],
+              "recommended_beer": "IPA"
+            },
+            {
+              "name": "Burger",
+              "price": 9.00,
+              "bun": "Brioche",
+              "cheese": "Cheddar",
+              "double_patty": false
+            },
+            {
+              "name": "Chicken Wings",
+              "price": 9.00,
+              "sauce": "Buffalo",
+              "spice_level": 4,
+              "limited_edition": true
+            }
+          ]
+        },
+        {
+          "name": "dinner",
+          "active": true,
+          "categories": ["Premium", "Seafood"],
+          "dishes": [
+            {
+              "name": "Mega \"Burger\"",
+              "price": 22.00,
+              "description": "Triple patty burger with smoked bacon and secret sauce.",
+              "weight_grams": 420,
+              "challenge": true
+            },
+            {
+              "name": "Lobster Mac & Cheese",
+              "price": 31.00,
+              "ingredients": [
+                "Lobster",
+                "Cheddar",
+                "Gruyère",
+                "Pasta"
+              ],
+              "wine_pairing": "Chardonnay",
+              "gluten_free_option": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

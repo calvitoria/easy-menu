@@ -158,3 +158,57 @@ The routes are structured hierarchically to reflect the data model:
 
 -   `POST /menus/:id/add_menu_item`: Add an existing menu item to a menu.
 -   `DELETE /menus/:id/remove_menu_item`: Remove a menu item from a menu.
+
+### 5. Data Import
+
+The API provides an endpoint to import restaurant, menu, and menu item data from a JSON file. This is particularly useful for bulk initial data loading.
+
+-   `POST /import`: Imports data from a JSON file.
+
+#### Usage Example
+
+You can import data using `curl`. The JSON file should follow a structure similar to `restaurant_data.json` or `extensive_restaurant_data.json`.
+
+**Example `restaurant_data.json` structure:**
+
+```json
+{
+  "restaurant": {
+    "name": "My Awesome Restaurant",
+    "address": "123 Main St",
+    "phone_number": "555-123-4567",
+    "email": "contact@awesome.com",
+    "menus": [
+      {
+        "name": "Breakfast",
+        "description": "Morning delights",
+        "menu_items": [
+          {
+            "name": "Pancakes",
+            "description": "Fluffy pancakes with syrup",
+            "price": 8.99
+          },
+          {
+            "name": "Omelette",
+            "description": "Customizable omelette",
+            "price": 10.50
+          }
+        ]
+      },
+      {
+        "name": "Lunch",
+        "description": "Midday meals",
+        "menu_items": [
+          {
+            "name": "Burger",
+            "description": "Classic beef burger",
+            "price": 12.00
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+The response will include an `audit_log` detailing the success or failure of each imported record.

@@ -1,0 +1,24 @@
+meta {
+  name: Import restaurant data extensive
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{host}}/imports/restaurants
+  body: multipartForm
+  auth: inherit
+}
+
+body:multipart-form {
+  file: @file(/home/vitoria/Desktop/menu-management-api/restaurant_data.json)
+}
+
+body:file {
+  file: @file(/home/vitoria/Desktop/menu-management-api/restaurant_data.json) @contentType(application/json; charset=utf-8)
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

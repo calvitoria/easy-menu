@@ -1,0 +1,19 @@
+meta {
+  name: Import restaurant data
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{host}}/imports/restaurants
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+}
+
+body:multipart {
+  file: "restaurant_data.json"
+}

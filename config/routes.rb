@@ -17,5 +17,7 @@ Rails.application.routes.draw do
     end
   end
 
+  post "imports/restaurants", to: "imports#create"
+
   match "*unmatched", to: "application#route_not_found", via: :all
 end
