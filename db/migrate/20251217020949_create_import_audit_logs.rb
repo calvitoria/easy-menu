@@ -11,10 +11,10 @@ class CreateImportAuditLogs < ActiveRecord::Migration[8.1]
       t.text :error_message
       t.datetime :started_at
       t.datetime :completed_at
-      
+
       t.timestamps
     end
-    
+
     add_index :import_audit_logs, :status
     add_index :import_audit_logs, :import_type
     add_index :import_audit_logs, :created_at
