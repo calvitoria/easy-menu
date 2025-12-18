@@ -9,7 +9,7 @@
 
 ## 🎬 Project Demo Video
 
-
+https://github.com/user-attachments/assets/16b57c75-d81d-4c70-8e45-ea7d813744b8
 
 ## 📋 Table of Contents
 
@@ -93,8 +93,8 @@ or
 1.  Clone the repository:
 
     ```bash
-    git clone https://github.com/Vitoria-Porto/menu-management-api.git
-    cd menu-management-api
+    git clone https://github.com/calvitoria/easy-menu
+    cd easy-menu
     ```
 
 ### without Docker
@@ -175,6 +175,10 @@ Run the test suite:
 ```bash
 rails test
 ```
+
+when running the test suit, the coverage report is generated. You can find it under /coverage/index.htm
+<img width="1920" height="937" alt="image" src="https://github.com/user-attachments/assets/86765c69-6dc4-48b9-8ccf-da7f60d16dc1" />
+
 
 ---
 
