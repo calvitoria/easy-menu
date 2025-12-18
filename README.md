@@ -9,7 +9,7 @@
 
 ## 🎬 Project Demo Video
 
-
+https://github.com/user-attachments/assets/16b57c75-d81d-4c70-8e45-ea7d813744b8
 
 ## 📋 Table of Contents
 
@@ -93,8 +93,8 @@ or
 1.  Clone the repository:
 
     ```bash
-    git clone https://github.com/Vitoria-Porto/menu-management-api.git
-    cd menu-management-api
+    git clone https://github.com/calvitoria/easy-menu
+    cd easy-menu
     ```
 
 ### without Docker
