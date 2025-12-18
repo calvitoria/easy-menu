@@ -4,20 +4,23 @@ Rails.application.routes.draw do
 
   resources :restaurants do
     resources :menus, shallow: true do
-      resources :menu_items, shallow: true, only: [ :index, :create ]
+      resources :menu_items, shallow: true, only: [ :index, :new, :create ]
     end
   end
 
-  resources :menu_items, except: [ :new, :edit ]
+  resources :menu_items, except: []
 
-  resources :menus, except: [ :new, :edit ] do
+  resources :menus, except: [] do
     member do
       post :add_menu_item
       delete :remove_menu_item
     end
   end
 
-  post "imports/restaurants", to: "imports#create"
+  resources :imports, only: [ :index, :show ]
+
+  get "imports/new/restaurants", to: "imports#new", as: :new_import_restaurants
+  post "imports/restaurants", to: "imports#create", as: :import_restaurants
 
   match "*unmatched", to: "application#route_not_found", via: :all
 end

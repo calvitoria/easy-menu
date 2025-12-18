@@ -1,10 +1,17 @@
-version: '3.8'
+version: "3.8"
+
 services:
   web:
     build: .
+    command: ./bin/dev
     volumes:
       - .:/app
     ports:
       - "3000:3000"
+      - "35729:35729"
     environment:
       RAILS_ENV: development
+      PORT: 3000
+      TAILWIND_DISABLE_WATCHMAN: "1"
+    tty: true
+    stdin_open: true

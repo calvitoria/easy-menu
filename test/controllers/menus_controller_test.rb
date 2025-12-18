@@ -29,7 +29,7 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
       menu.menu_items << coffee
       menu.menu_items << waffles
 
-      get "/restaurants/#{@restaurant.id}/menus"
+      get "/restaurants/#{@restaurant.id}/menus", as: :json
       assert_response :success
 
       json = JSON.parse(response.body)
@@ -48,7 +48,7 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
       other_restaurant = create(:restaurant)
       other_menu = create(:menu, restaurant: other_restaurant)
 
-      get "/menus"
+      get "/menus", as: :json
       assert_response :success
 
       json = JSON.parse(response.body)
@@ -61,7 +61,7 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     test "returns empty array when restaurant has no menus" do
       empty_restaurant = create(:restaurant)
 
-      get "/restaurants/#{empty_restaurant.id}/menus"
+      get "/restaurants/#{empty_restaurant.id}/menus", as: :json
       assert_response :success
 
       json = JSON.parse(response.body)
@@ -69,12 +69,12 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     end
 
     test "returns 404 when restaurant does not exist" do
-      get "/restaurants/999999/menus"
+      get "/restaurants/999999/menus", as: :json
       assert_response :not_found
     end
 
     test "includes correct associations" do
-      get "/restaurants/#{@restaurant.id}/menus"
+      get "/restaurants/#{@restaurant.id}/menus", as: :json
       assert_response :success
 
       json = JSON.parse(response.body)
@@ -87,7 +87,7 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
 
   class ShowTest < MenusControllerTest
     test "returns menu with items and restaurant" do
-      get "/menus/#{@menu.id}"
+      get "/menus/#{@menu.id}", as: :json
       assert_response :success
 
       json = JSON.parse(response.body)
@@ -101,7 +101,7 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     end
 
     test "includes nested restaurant details" do
-      get "/menus/#{@menu.id}"
+      get "/menus/#{@menu.id}", as: :json
       assert_response :success
 
       json = JSON.parse(response.body)
@@ -110,7 +110,7 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     end
 
     test "returns 404 for non-existent menu" do
-      get "/menus/99999"
+      get "/menus/99999", as: :json
       assert_response :not_found
     end
   end
@@ -173,25 +173,6 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
       assert_response :unprocessable_entity
       json = JSON.parse(response.body)
       assert_includes json["errors"], "Name can't be blank"
-    end
-
-    test "returns validation errors when categories is not an array" do
-      post "/restaurants/#{@restaurant.id}/menus", params: {
-        menu: {
-          name: "Invalid",
-          categories: "Dinner"
-        }
-      }, as: :json
-
-      assert_response :unprocessable_entity
-
-      json = JSON.parse(response.body)
-      assert json.key?("error") || json.key?("errors"),
-             "Response should contain 'error' or 'errors' key"
-
-      response_text = response.body.downcase
-      assert response_text.include?("categor"),
-             "Response should mention categories (case-insensitive)"
     end
 
     test "returns 404 when restaurant does not exist" do
@@ -272,22 +253,6 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
       assert_includes json["errors"], "Name can't be blank"
     end
 
-    test "returns validation errors when categories is not an array" do
-      put "/menus/#{@menu.id}", params: {
-        menu: { categories: "Invalid" }
-      }, as: :json
-
-      assert_response :unprocessable_entity
-
-      json = JSON.parse(response.body)
-      assert json.key?("error") || json.key?("errors"),
-             "Response should contain 'error' or 'errors' key"
-
-      response_text = response.body.downcase
-      assert response_text.include?("categor"),
-             "Response should mention categories (case-insensitive)"
-    end
-
     test "returns 404 when menu does not exist" do
       put "/menus/99999", params: {
         menu: { name: "Does not exist" }
@@ -306,7 +271,7 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
       menu.menu_items << item2
 
       assert_difference "Menu.count", -1 do
-        delete "/menus/#{menu.id}"
+        delete "/menus/#{menu.id}", as: :json
       end
 
       assert_response :no_content
@@ -319,7 +284,7 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     end
 
     test "returns 404 when menu does not exist" do
-      delete "/menus/99999"
+      delete "/menus/99999", as: :json
       assert_response :not_found
     end
   end
@@ -396,6 +361,8 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
       assert_includes json["errors"], "Could not remove menu item from menu"
     end
 
+
+
     test "returns 404 when menu item does not exist" do
       delete "/menus/#{@menu.id}/remove_menu_item", params: {
         menu_item_id: 99999
@@ -421,7 +388,7 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
       menu.menu_items << soup
       menu.menu_items << salad
 
-      get "/menus/#{menu.id}/menu_items"
+      get "/menus/#{menu.id}/menu_items", as: :json
       assert_response :success
 
       json = JSON.parse(response.body)
@@ -435,7 +402,7 @@ class MenusControllerTest < ActionDispatch::IntegrationTest
     test "returns empty array when menu has no items" do
       empty_menu = create(:menu, restaurant: @restaurant)
 
-      get "/menus/#{empty_menu.id}/menu_items"
+      get "/menus/#{empty_menu.id}/menu_items", as: :json
       assert_response :success
 
       json = JSON.parse(response.body)

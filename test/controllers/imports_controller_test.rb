@@ -18,8 +18,50 @@ class ImportsControllerTest < ActionDispatch::IntegrationTest
     Rack::Test::UploadedFile.new(file.path, "application/json")
   end
 
+  test "GET /imports returns list of imports" do
+    import = ImportAuditLog.create!(
+      import_type: "restaurants",
+      status: "completed",
+      total_records: 10,
+      successful_records: 8,
+      failed_records: 2,
+      created_at: Time.current,
+      completed_at: Time.current + 5.seconds
+    )
+
+    get imports_path
+
+    assert_response :success
+    assert_select "h2", "Import History"
+  end
+
+  test "GET /imports/:id shows import details" do
+    import = ImportAuditLog.create!(
+      import_type: "restaurants",
+      status: "completed",
+      total_records: 10,
+      successful_records: 8,
+      failed_records: 2,
+      created_at: Time.current,
+      completed_at: Time.current + 5.seconds
+    )
+
+    get import_path(import)
+
+    assert_response :success
+    assert_select "h2", "Import Details"
+  end
+
+  test "GET /imports/new/restaurants shows upload form" do
+    get new_import_restaurants_path
+
+    assert_response :success
+    assert_select "h2", "Import Restaurants"
+    assert_select "form[action='#{import_restaurants_path}']"
+  end
+
   test "returns error when no file is provided" do
-    post "/imports/restaurants"
+    post import_restaurants_path
 
     assert_response :bad_request
     body = JSON.parse(response.body)
@@ -35,7 +77,7 @@ class ImportsControllerTest < ActionDispatch::IntegrationTest
 
     uploaded = Rack::Test::UploadedFile.new(file.path, "text/plain")
 
-    post "/imports/restaurants", params: { file: uploaded }
+    post import_restaurants_path, params: { file: uploaded }
 
     assert_response :bad_request
     body = JSON.parse(response.body)
@@ -54,7 +96,7 @@ class ImportsControllerTest < ActionDispatch::IntegrationTest
 
     uploaded = Rack::Test::UploadedFile.new(file.path, "application/json")
 
-    post "/imports/restaurants", params: { file: uploaded }
+    post import_restaurants_path, params: { file: uploaded }
 
     assert_response :bad_request
     body = JSON.parse(response.body)
@@ -69,7 +111,7 @@ class ImportsControllerTest < ActionDispatch::IntegrationTest
   test "successfully imports restaurant_data.json" do
     file = upload_json("restaurant_data.json")
 
-    post "/imports/restaurants", params: { file: file }
+    post import_restaurants_path, params: { file: file }
 
     assert_response :created
     body = JSON.parse(response.body)
@@ -84,7 +126,7 @@ class ImportsControllerTest < ActionDispatch::IntegrationTest
   test "logs errors but still succeeds when json contains invalid menu structure" do
     file = upload_json("restaurant_data.json")
 
-    post "/imports/restaurants", params: { file: file }
+    post import_restaurants_path, params: { file: file }
 
     body = JSON.parse(response.body)
 
@@ -101,7 +143,7 @@ class ImportsControllerTest < ActionDispatch::IntegrationTest
   test "handles empty restaurants array gracefully" do
     uploaded = upload_temp_json({ restaurants: [] })
 
-    post "/imports/restaurants", params: { file: uploaded }
+    post import_restaurants_path, params: { file: uploaded }
 
     assert_response :created
     body = JSON.parse(response.body)
@@ -119,12 +161,59 @@ class ImportsControllerTest < ActionDispatch::IntegrationTest
       }
     )
 
-    post "/imports/restaurants", params: { file: uploaded }
+    post import_restaurants_path, params: { file: uploaded }
 
     assert_response :created
     body = JSON.parse(response.body)
 
     assert body["success"]
     assert body["logs"].any? { |l| l["level"] == "ERROR" }
+  end
+
+  test "GET /imports.json returns JSON list" do
+    import = ImportAuditLog.create!(
+      import_type: "restaurants",
+      status: "completed",
+      total_records: 10,
+      successful_records: 8,
+      failed_records: 2,
+      created_at: Time.current,
+      completed_at: Time.current + 5.seconds
+    )
+
+    get imports_path(format: :json)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal 1, json.length
+    assert_equal import.id, json.first["id"]
+  end
+
+  test "GET /imports/:id.json returns JSON" do
+    import = ImportAuditLog.create!(
+      import_type: "restaurants",
+      status: "completed",
+      total_records: 10,
+      successful_records: 8,
+      failed_records: 2,
+      created_at: Time.current,
+      completed_at: Time.current + 5.seconds
+    )
+
+    get import_path(import, format: :json)
+
+    assert_response :success
+    json = JSON.parse(response.body)
+    assert_equal import.id, json["id"]
+    assert_equal import.import_type, json["import_type"]
+  end
+
+  test "GET /imports with no imports shows empty state" do
+    ImportAuditLog.destroy_all
+
+    get imports_path
+
+    assert_response :success
+    assert_select "h3", "No imports yet"
   end
 end

@@ -1,7 +1,7 @@
 {
   "restaurants": [
     {
-      "name": "Poppo's Cafe",
+      "name": "Clairs cafe",
       "description": "A cozy neighborhood cafe known for comfort food and fresh ingredients.",
       "address": "123 Main Street, Springfield",
       "email": "contact@popposcafe.com",
@@ -85,7 +85,7 @@
       ]
     },
     {
-      "name": "Casa del Poppo",
+      "name": "Eat Kitchen",
       "description": "A bold fusion kitchen with indulgent flavors.",
       "email": "hello@casadelpoppo.com",
       "socials": {

@@ -1,0 +1,103 @@
+<div class="px-4 sm:px-0">
+  <div class="sm:flex sm:items-center">
+    <div class="sm:flex-auto">
+      <h1 class="text-3xl font-bold text-gray-900">Menu Items<%= " for #{@menu.name}" if @menu %></h1>
+      <p class="mt-2 text-sm text-gray-700">A list of all menu items<%= " for #{@menu.name}" if @menu %> in your system.</p>
+    </div>
+    <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+      <% if @menu %>
+        <%= link_to 'Add Menu Item', new_menu_menu_item_path(@menu), class: "inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto" %>
+      <% else %>
+        <%= link_to 'Add Menu Item', new_menu_item_path, class: "inline-flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:w-auto" %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="mt-8 flex flex-col">
+    <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+      <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+          <table class="min-w-full divide-y divide-gray-300">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Name</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Description</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Price</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Dietary</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Categories</th>
+                <% unless @menu %>
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Menus</th>
+                <% end %>
+                <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                  <span class="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 bg-white">
+              <% @menu_items.each do |menu_item| %>
+                <tr>
+                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+                    <div class="font-medium text-gray-900"><%= menu_item.name %></div>
+                  </td>
+                  <td class="px-3 py-4 text-sm text-gray-500"><%= menu_item.description&.truncate(50) %></td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">$<%= sprintf('%.2f', menu_item.price) %></td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                    <div class="flex flex-col">
+                      <% if menu_item.vegan? %><span class="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Vegan</span><% end %>
+                      <% if menu_item.vegetarian? %><span class="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800 mt-1">Vegetarian</span><% end %>
+                      <% if menu_item.spicy? %><span class="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800 mt-1">Spicy</span><% end %>
+                    </div>
+                  </td>
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><%= menu_item.categories&.join(', ') %></td>
+                  <% unless @menu %>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500"><%= menu_item.menus.count %></td>
+                  <% end %>
+                  <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                    <div class="flex justify-end space-x-2">
+                      <%= link_to 'View', menu_item_path(menu_item), class: "text-indigo-600 hover:text-indigo-900" %>
+                      <%= link_to 'Edit', edit_menu_item_path(menu_item), class: "text-blue-600 hover:text-blue-900" %>
+                      <%= link_to 'Delete', menu_item_path(menu_item), data: { turbo_method: :delete, turbo_confirm: 'Are you sure?' }, class: 'text-red-600 hover:text-red-900' %>
+                    </div>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <% if @menu_items.empty? %>
+    <div class="px-4 py-12 text-center">
+      <svg class="mx-auto h-12 w-12 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      <h3 class="mt-2 text-sm font-medium text-gray-900">No menu items</h3>
+      <p class="mt-1 text-sm text-gray-500">Get started by creating a new menu item.</p>
+      <div class="mt-6">
+        <% if @menu %>
+          <%= link_to new_menu_menu_item_path(@menu), class: "inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" do %>
+            <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 3a1 1 0 00-1 1v5H4a1 1 0 100 2h5v5a1 1 0 102 0v-5h5a1 1 0 100-2h-5V4a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+            New Menu Item
+          <% end %>
+        <% else %>
+          <%= link_to new_menu_item_path, class: "inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" do %>
+            <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 3a1 1 0 00-1 1v5H4a1 1 0 100 2h5v5a1 1 0 102 0v-5h5a1 1 0 100-2h-5V4a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+            New Menu Item
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <% unless @menu %>
+    <div class="mt-8 flex justify-end space-x-3">
+      <%= link_to 'Back to Menus', menus_path, class: "inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" %>
+    </div>
+  <% end %>
+</div>

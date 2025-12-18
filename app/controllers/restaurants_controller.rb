@@ -5,35 +5,66 @@ class RestaurantsController < ApplicationController
 
   def index
     @restaurants = Restaurant.includes(menus: :menu_items).all
-    render json: @restaurants, include: { menus: { include: :menu_items } }
+
+    respond_to do |format|
+      format.html
+      format.json { render json: @restaurants, include: { menus: { include: :menu_items } } }
+    end
   end
 
   def show
-    render json: @restaurant, include: { menus: { include: :menu_items } }
+    respond_to do |format|
+      format.html
+      format.json { render json: @restaurant, include: { menus: { include: :menu_items } } }
+    end
+  end
+
+  def new
+    @restaurant = Restaurant.new
   end
 
   def create
     @restaurant = Restaurant.new(restaurant_params)
 
-    if @restaurant.save
-      render json: @restaurant, status: :created
-    else
-      render json: { errors: @restaurant.errors.full_messages }, status: :unprocessable_entity
+    respond_to do |format|
+      if @restaurant.save
+        format.html { redirect_to @restaurant, notice: "Restaurant was successfully created." }
+        format.json { render json: @restaurant, status: :created }
+      else
+        format.html { render :new, status: :unprocessable_entity }
+        format.json { render json: { errors: @restaurant.errors.full_messages }, status: :unprocessable_entity }
+      end
     end
+  end
+
+  def edit
+    @restaurant = Restaurant.find(params[:id])
   end
 
   def update
     if @restaurant.update(restaurant_params)
-      render json: @restaurant
+      respond_to do |format|
+        format.html { redirect_to @restaurant, notice: "Restaurant was successfully updated." }
+        format.json { render json: @restaurant }
+      end
     else
-      render json: { errors: @restaurant.errors.full_messages }, status: :unprocessable_entity
+      respond_to do |format|
+        format.html { render :edit, status: :unprocessable_entity }
+        format.json { render json: { errors: @restaurant.errors.full_messages }, status: :unprocessable_entity }
+      end
     end
   end
 
   def destroy
     @restaurant.destroy
-    head :no_content
+
+    respond_to do |format|
+      format.html { redirect_to restaurants_url, notice: "Restaurant was successfully destroyed." }
+      format.json { head :no_content }
+    end
   end
+
+  private
 
   def restaurant_params
     params.require(:restaurant).permit(
@@ -41,7 +72,6 @@ class RestaurantsController < ApplicationController
       :email,
       :description,
       :address,
-      :active
     )
   end
 end
