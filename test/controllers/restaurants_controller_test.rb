@@ -8,13 +8,13 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should get index" do
-    get restaurants_url
+    get restaurants_url, as: :json
     assert_response :success
     assert_not_nil JSON.parse(response.body)
   end
 
   test "should show restaurant" do
-    get restaurant_url(@restaurant)
+    get restaurant_url(@restaurant), as: :json
     assert_response :success
     body = JSON.parse(response.body)
     assert_equal @restaurant.name, body["name"]
@@ -30,7 +30,7 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
           description: "A new restaurant",
           address: "123 New St"
         }
-      }
+      }, as: :json
     end
 
     assert_response :created
@@ -44,7 +44,7 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
         restaurant: {
           name: ""
         }
-      }
+      }, as: :json
     end
 
     assert_response :unprocessable_entity
@@ -57,7 +57,7 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
       restaurant: {
         name: "Updated Name"
       }
-    }
+    }, as: :json
 
     assert_response :success
     @restaurant.reload
@@ -66,14 +66,14 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
 
   test "should destroy restaurant" do
     assert_difference("Restaurant.count", -1) do
-      delete restaurant_url(@restaurant)
+      delete restaurant_url(@restaurant), as: :json
     end
 
     assert_response :no_content
   end
 
   test "should return 404 for non-existent restaurant" do
-    get restaurant_url(999999)
+    get restaurant_url(999999), as: :json
     assert_response :not_found
     body = JSON.parse(response.body)
     assert_equal "Restaurant not found", body["error"]
@@ -86,7 +86,7 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
     menu_item = create(:menu_item)
     menu.menu_items << menu_item
 
-    get restaurants_url
+    get restaurants_url, as: :json
     assert_response :success
 
     body = JSON.parse(response.body)
@@ -103,7 +103,7 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
     menu_item = create(:menu_item)
     menu.menu_items << menu_item
 
-    get restaurant_url(@restaurant)
+    get restaurant_url(@restaurant), as: :json
     assert_response :success
 
     body = JSON.parse(response.body)
@@ -123,7 +123,7 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
           name: "ORIGINAL NAME",  # Different case
           email: "test@example.com"
         }
-      }
+      }, as: :json
     end
 
     assert_response :unprocessable_entity
@@ -138,7 +138,7 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
       restaurant: {
         name: "other restaurant"  # lowercase
       }
-    }
+    }, as: :json
 
     assert_response :unprocessable_entity
     body = JSON.parse(response.body)
@@ -151,7 +151,7 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
       restaurant: {
         name: original_name.upcase  # Same name, different case
       }
-    }
+    }, as: :json
 
     assert_response :success
     @restaurant.reload
@@ -167,7 +167,7 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
       assert_difference("Menu.count", -1) do
         assert_difference("MenuItemMenu.count", -1) do
           assert_no_difference("MenuItem.count") do  # MenuItem should not be destroyed
-            delete restaurant_url(@restaurant)
+            delete restaurant_url(@restaurant), as: :json
           end
         end
       end
@@ -185,7 +185,7 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
     }
 
     assert_difference("Restaurant.count", 1) do
-      post restaurants_url, params: { restaurant: restaurant_params }
+      post restaurants_url, params: { restaurant: restaurant_params }, as: :json
     end
 
     assert_response :created
@@ -203,7 +203,7 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
       address: "456 Updated St"
     }
 
-    patch restaurant_url(@restaurant), params: { restaurant: update_params }
+    patch restaurant_url(@restaurant), params: { restaurant: update_params }, as: :json
 
     assert_response :success
     @restaurant.reload
@@ -217,15 +217,11 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
          params: "{malformed: json",
          headers: { "CONTENT_TYPE" => "application/json" }
 
-    begin
-      assert_response :unprocessable_entity
-    rescue ActionDispatch::Http::Parameters::ParseError
-      assert true
-    end
+    assert_response :unprocessable_entity
   end
 
   test "should require restaurant parameter" do
-    post restaurants_url, params: {}
+    post restaurants_url, params: {}, as: :json
     assert_response :bad_request
     body = JSON.parse(response.body)
     assert_includes body["error"], "param is missing"
@@ -236,7 +232,7 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
       restaurant: {
         email: "invalid-email-format"
       }
-    }
+    }, as: :json
 
     assert_response :unprocessable_entity
     body = JSON.parse(response.body)
@@ -248,7 +244,7 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
       restaurant: {
         email: ""
       }
-    }
+    }, as: :json
 
     assert_response :success
     @restaurant.reload
@@ -260,7 +256,7 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
       restaurant: {
         email: nil
       }
-    }
+    }, as: :json
 
     assert_response :success
     @restaurant.reload
@@ -274,7 +270,7 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
           name: "No Email Restaurant",
           email: nil
         }
-      }
+      }, as: :json
     end
 
     assert_response :created
@@ -288,7 +284,7 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
       restaurant: {
         name: long_name
       }
-    }
+    }, as: :json
 
     assert_response :success
     @restaurant.reload
@@ -303,7 +299,7 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
         description: "",
         address: ""
       }
-    }
+    }, as: :json
 
     # Name is required, so this should fail
     assert_response :unprocessable_entity
@@ -317,7 +313,7 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
       restaurant: {
         description: "Only updating description"
       }
-    }
+    }, as: :json
 
     assert_response :success
     @restaurant.reload
@@ -326,7 +322,7 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should return proper JSON structure for index" do
-    get restaurants_url
+    get restaurants_url, as: :json
     assert_response :success
 
     body = JSON.parse(response.body)
@@ -351,7 +347,7 @@ class RestaurantsControllerTest < ActionDispatch::IntegrationTest
       restaurant: {
         name: special_name
       }
-    }
+    }, as: :json
 
     assert_response :success
     @restaurant.reload

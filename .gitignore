@@ -69,3 +69,5 @@ yarn-debug.log*
 /public/uploads
 
 .bru
+/app/assets/builds/*
+!/app/assets/builds/.keep

@@ -15,32 +15,6 @@ class ImportAuditLog < ApplicationRecord
     self.status ||= "pending"
   end
 
-  def success_rate
-    return 0 if total_records.zero?
-    (successful_records.to_f / total_records * 100).round(2)
-  end
-
-  def duration
-    return nil unless completed_at.present? && started_at.present?
-    completed_at - started_at
-  end
-
-  def completed?
-    status == "completed"
-  end
-
-  def failed?
-    status == "failed"
-  end
-
-  def processing?
-    status == "processing"
-  end
-
-  def mark_as_processing
-    update(status: "processing", started_at: Time.current)
-  end
-
   def mark_as_completed(stats = {})
     update(
       status: "completed",

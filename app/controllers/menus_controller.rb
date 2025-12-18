@@ -1,73 +1,103 @@
 class MenusController < ApplicationController
-  load_resource :menu, only: [ :show, :update, :destroy, :add_menu_item, :remove_menu_item ]
-  load_resource :restaurant, param: :restaurant_id, only: [ :create ]
+  load_resource :restaurant, param: :restaurant_id, only: [ :index, :new, :create ]
+  load_resource :menu, only: [ :show, :edit, :update, :destroy, :add_menu_item, :remove_menu_item ]
 
   before_action only: [ :create, :update ] do
+    if params[:menu][:categories].is_a?(String)
+      params[:menu][:categories] = params[:menu][:categories].split(",").map(&:strip)
+    end
     validate_array_of_strings :categories, scope: :menu
   end
 
   def index
-    if params[:restaurant_id]
-      @restaurant = Restaurant.find(params[:restaurant_id])
-      @menus = @restaurant.menus.with_associations
+    @menus = if @restaurant
+               @restaurant.menus.with_associations
     else
-      @menus = Menu.with_associations
+               Menu.with_associations
     end
 
-    render_ok(@menus, include: :menu_items)
+    respond_to do |format|
+      format.html
+      format.json { render json: @menus, include: :menu_items }
+    end
   end
 
   def show
-    render_ok(@menu, include: [ :menu_items, :restaurant ])
+    respond_to do |format|
+      format.html
+      format.json { render json: @menu, include: [ :menu_items, :restaurant ] }
+    end
+  end
+
+  def new
+    @menu = @restaurant ? @restaurant.menus.new : Menu.new
+  end
+
+  def edit
+    # Handled by load_resource
   end
 
   def create
-    @menu = @restaurant.menus.new(menu_params)
+    @menu = @restaurant ? @restaurant.menus.new(menu_params) : Menu.new(menu_params)
 
-    if @menu.save
-      render_created(@menu)
-    else
-      render_errors(@menu)
+    respond_to do |format|
+      if @menu.save
+        format.html { redirect_to @menu, notice: "Menu was successfully created." }
+        format.json { render json: @menu, status: :created }
+      else
+        format.html { render :new, status: :unprocessable_entity }
+        format.json { render json: { errors: @menu.errors.full_messages }, status: :unprocessable_entity }
+      end
     end
   end
 
   def update
-    if @menu.update(menu_params)
-      render_ok(@menu)
-    else
-      render_errors(@menu)
+    respond_to do |format|
+      if @menu.update(menu_params)
+        format.html { redirect_to @menu, notice: "Menu was successfully updated." }
+        format.json { render json: @menu }
+      else
+        format.html { render :edit, status: :unprocessable_entity }
+        format.json { render json: { errors: @menu.errors.full_messages }, status: :unprocessable_entity }
+      end
     end
   end
 
   def destroy
+    restaurant = @menu.restaurant
     @menu.destroy
-    render_no_content
+
+    respond_to do |format|
+      format.html { redirect_to restaurant ? restaurant_menus_url(restaurant) : menus_url, notice: "Menu was successfully destroyed." }
+      format.json { head :no_content }
+    end
   end
 
   def add_menu_item
     result = MenuManagementService.add_menu_item(@menu, params[:menu_item_id])
 
-    if result.success
-      render_ok({
-        message: "Menu item added successfully",
-        menu: result.data[:menu],
-        menu_item: result.data[:menu_item]
-      })
-    else
-      render_service_error(result, status: result.status || :unprocessable_entity)
+    respond_to do |format|
+      if result.success
+        format.html { redirect_to @menu, notice: "Menu item added successfully." }
+        format.json { render json: { message: "Menu item added successfully", menu: result.data[:menu], menu_item: result.data[:menu_item] } }
+      else
+        format.html { redirect_to @menu, alert: result.errors.join(", ") }
+        format.json { render json: { errors: result.errors }, status: result.status || :unprocessable_entity }
+      end
     end
   end
 
   def remove_menu_item
     result = MenuManagementService.remove_menu_item(@menu, params[:menu_item_id])
 
-    if result.success
-      render_ok({
-        message: "Menu item removed successfully",
-        menu: result.data[:menu]
-      })
-    else
-      render_service_error(result, status: result.status || :unprocessable_entity)
+    respond_to do |format|
+      if result.success
+        format.html { redirect_to @menu, notice: "Menu item removed successfully." }
+        format.json { render json: { message: "Menu item removed successfully", menu: result.data[:menu] } }
+      else
+        format.html { redirect_to @menu, alert: result.errors.join(", ") }
+        format.json { render json: { errors: result.errors }, status: result.status || :unprocessable_entity }
+      end
     end
   end
 

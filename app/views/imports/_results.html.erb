@@ -1,0 +1,98 @@
+<template id="success-results-template">
+  <div class="mt-8 bg-white shadow sm:rounded-lg">
+    <div class="px-4 py-5 sm:p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h3 class="text-lg font-medium leading-6 text-gray-900">Import Results</h3>
+          <p class="mt-1 text-sm text-gray-500">Summary of the import process</p>
+        </div>
+        <div class="flex items-center space-x-2">
+          <span class="results-status inline-flex items-center rounded-full bg-green-100 text-green-800 px-3 py-1 text-xs font-medium">
+            ✓ Success
+          </span>
+          <span class="text-sm text-gray-500 duration-display">0.00s</span>
+        </div>
+      </div>
+      
+      <div class="summary-container mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+        <!-- Summary will be inserted here -->
+      </div>
+      
+      <div class="stats-container grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <!-- Stats will be inserted here -->
+      </div>
+      
+      <div class="logs-container mb-6">
+        <!-- Logs will be inserted here -->
+      </div>
+      
+      <div class="audit-container pt-4 border-t border-gray-200 hidden">
+        <!-- Audit info will be inserted here -->
+      </div>
+      
+      <div class="mt-6 pt-6 border-t border-gray-200">
+        <a href="<%= restaurants_path %>" class="inline-flex items-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+          View Restaurants
+        </a>
+        <button data-action="click->import#clearResults" class="ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+          Import Another File
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="error-results-template">
+  <div class="mt-8 bg-white shadow sm:rounded-lg">
+    <div class="px-4 py-5 sm:p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h3 class="text-lg font-medium leading-6 text-gray-900">Import Failed</h3>
+          <p class="mt-1 text-sm text-gray-500">There was an error processing your file</p>
+        </div>
+        <span class="inline-flex items-center rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-800">
+          <svg class="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+          </svg>
+          Error
+        </span>
+      </div>
+      
+      <div class="error-details rounded-md bg-red-50 p-4 mb-6">
+        <!-- Error details will be inserted here -->
+      </div>
+      
+      <div class="error-logs-container mb-6 hidden">
+        <!-- Error logs will be inserted here -->
+      </div>
+      
+      <div class="mt-6 pt-6 border-t border-gray-200">
+        <button data-action="click->import#clearResults" class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+          Try Again
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template id="network-error-template">
+  <div class="mt-8 bg-white shadow sm:rounded-lg">
+    <div class="px-4 py-5 sm:p-6">
+      <div class="rounded-md bg-red-50 p-4">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800">Network Error</h3>
+            <div class="mt-2 text-sm text-red-700">
+              <p>Failed to connect to server. Please try again.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

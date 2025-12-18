@@ -1,40 +1,94 @@
-# Menu Management API
+# EasyMenu - Menu Management API
 
-This is a Ruby on Rails API for managing menus and menu items for restaurants.
+![Ruby](https://img.shields.io/badge/Ruby-3.4.7-red?style=for-the-badge&logo=ruby)
+![Rails](https://img.shields.io/badge/Rails-8.1.1-cc0000?style=for-the-badge&logo=rubyonrails)
+![Docker](https://img.shields.io/badge/Docker-ready-2496ED?style=for-the-badge&logo=docker)
+![Tests](https://img.shields.io/badge/Test%20Coverage-92.4%25-brightgreen?style=for-the-badge&logo=minitest)
+
+**EasyMenu** is a Ruby on Rails application for managing restaurants, menus, and menu items. It combines a clean REST-style API with server-rendered HTML using Hotwire, and is designed to run smoothly both locally and inside Docker.
+
+## 🎬 Project Demo Video
+
+
+
+## 📋 Table of Contents
+
+- [Technology Stack](#technology-stack)
+- [Project Structure](#project-structure)
+- [Data Model](#data-model)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+- [Installation & build](#installation)
+  - [Installation without docker](#without-docker)
+  - [Installation with docker](#with-docker)
+- [Testing](#testing)
+- [Linting](#linting)
+- [API Endpoints](#api-endpoints)
+  - [1. Restaurants](#1-restaurants)
+  - [2. Menus](#2-menus)
+  - [3. Menu Items](#3-menu-items)
+  - [4. Menu Item Management](#4-menu-item-management)
+  - [5. Data Import](#5-data-import)
+
+## Technology Stack
+
+- **Backend**: Ruby on Rails 8.1
+- **Database**: SQLite (development)
+- **Background Jobs**: SolidQueue
+- **Frontend**: Hotwire (Turbo + Stimulus)
+- **Styling**: Tailwind CSS
+- **Testing**: Minitest
+- **Linting**: RuboCop
+- **Containerization**: Docker & Docker Compose
 
 ## Project Structure
 
-The project follows a standard Ruby on Rails structure:
 
--   `app/`: Contains the core application code, including models, controllers, and views.
--   `app/models`: Defines the data models: `Restaurant`, `Menu`, and `MenuItem`.
--   `app/controllers`: Handles API requests and responses, with business logic delegated to services.
--   `app/services`: Contains service objects that encapsulate business logic.
--   `app/controllers/concerns`: Provides shared modules for common controller tasks.
--   `config/`: Contains the application configuration, including routes, database configuration, and environment-specific settings.
--   `db/`: Contains the database schema, migrations, and seeds.
--   `docs/`: Contains API documentation.
--   `test/`: Contains the test suite.
+```
+app/
+├── controllers/           # Request handling & orchestration
+│ └── concerns/
+├── models/                # Domain models
+├── services/              # Business logic & workflows
+├── views/                 # Server-rendered UI (Hotwire)
+config/                    # Application configuration
+db/                        # Schema, migrations, seeds
+docs/                      # Documentation
+test/                      # Test suite
+```
+
+---
 
 ## Data Model
 
-The data model consists of three main resources:
+The data model consists of four main resources:
 
 -   **Restaurant**: The top-level resource. Each restaurant has its own set of menus.
 -   **Menu**: Belongs to a `Restaurant` and can contain multiple `MenuItems`.
 -   **MenuItem**: Can be associated with multiple `Menus`, forming a many-to-many relationship through the `MenuItemMenu` join table.
+-   **ImportAuditLog**: Records the status and details of data import operations.
+-   **MenuItemMenu**: join table for the many-to-many relationship.
+
+---
 
 ## Getting Started
+You can run EasyMenu with or without Docker. Docker is recommended for a consistent development environment.
 
 ### Prerequisites
+
+**Without Docker**
 
 -   Ruby `3.4.7` (as specified in `.ruby-version`)
 -   Bundler
 -   SQLite3
 or
--   Docker and Docker Compose
+-   Node.js & npm
 
-### Installation (without Docker)
+**With Docker**
+- Docker
+- Docker Compose
+
+## Installation
 
 1.  Clone the repository:
 
@@ -43,7 +97,9 @@ or
     cd menu-management-api
     ```
 
-2.  Install the dependencies:
+### without Docker
+
+1.  Install the dependencies:
 
     ```bash
     bundle install
@@ -81,7 +137,9 @@ rails server
 
 The API will be available at `http://localhost:3000`.
 
-## Docker Usage
+---
+
+### With Docker
 
 To run the application using Docker Compose:
 
@@ -98,7 +156,7 @@ To run the application using Docker Compose:
     docker-compose up
     ```
 
-    Your application should now be accessible at `http://localhost:3000`.
+  Your application should now be accessible at `http://localhost:3000`.
 
 ### Accessing the Bash Shell in the Container
 
@@ -108,6 +166,8 @@ To get a bash shell inside the running `web` service container:
 docker-compose exec web bash
 ```
 
+---
+
 ## Testing
 
 Run the test suite:
@@ -116,6 +176,8 @@ Run the test suite:
 rails test
 ```
 
+---
+
 ## Linting
 
 This project uses RuboCop for linting. To check the code for style violations, run:
@@ -123,6 +185,8 @@ This project uses RuboCop for linting. To check the code for style violations, r
 ```bash
 rubocop
 ```
+
+---
 
 ## API Endpoints
 
@@ -163,52 +227,7 @@ The routes are structured hierarchically to reflect the data model:
 
 The API provides an endpoint to import restaurant, menu, and menu item data from a JSON file. This is particularly useful for bulk initial data loading.
 
--   `POST /import`: Imports data from a JSON file.
+-   `POST /imports/restaurants`: Imports data from a JSON file.
+-   `GET /imports`: List all import audit logs.
+-   `GET /imports/:id`: Show a specific import audit log.
 
-#### Usage Example
-
-You can import data using `curl`. The JSON file should follow a structure similar to `restaurant_data.json` or `extensive_restaurant_data.json`.
-
-**Example `restaurant_data.json` structure:**
-
-```json
-{
-  "restaurant": {
-    "name": "My Awesome Restaurant",
-    "address": "123 Main St",
-    "phone_number": "555-123-4567",
-    "email": "contact@awesome.com",
-    "menus": [
-      {
-        "name": "Breakfast",
-        "description": "Morning delights",
-        "menu_items": [
-          {
-            "name": "Pancakes",
-            "description": "Fluffy pancakes with syrup",
-            "price": 8.99
-          },
-          {
-            "name": "Omelette",
-            "description": "Customizable omelette",
-            "price": 10.50
-          }
-        ]
-      },
-      {
-        "name": "Lunch",
-        "description": "Midday meals",
-        "menu_items": [
-          {
-            "name": "Burger",
-            "description": "Classic beef burger",
-            "price": 12.00
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-The response will include an `audit_log` detailing the success or failure of each imported record.
