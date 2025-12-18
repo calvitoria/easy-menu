@@ -176,6 +176,10 @@ Run the test suite:
 rails test
 ```
 
+when running the test suit, the coverage report is generated. You can find it under /coverage/index.htm
+<img width="1920" height="937" alt="image" src="https://github.com/user-attachments/assets/86765c69-6dc4-48b9-8ccf-da7f60d16dc1" />
+
+
 ---
 
 ## Linting
